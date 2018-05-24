@@ -16,7 +16,6 @@ install:
 before_build:
   - cd c:\projects\SJTUThesis
   - sed -i 's/,\s*fontset=\?\w*//' thesis.tex
-  - sed -i '/setmainfont/d' sjtuthesis.cls
   - sed -i 's/documentclass\[/documentclass[fontset=fandol, /' thesis.tex
 
 build_script:
