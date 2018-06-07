@@ -1,157 +1,32 @@
-% \iffalse meta-comment
-% !TeX program  = XeLaTeX
-% !TeX encoding = UTF-8
-%<*internal>
-\def\nameofplainTeX{plain}
-\ifx\fmtname\nameofplainTeX\else
-  \expandafter\begingroup
-\fi
-%</internal>
-%<*install>
-\input docstrip.tex
-\keepsilent
-\askforoverwritefalse
-\preamble
-
-Copyright (C) 2009-\the\year
-SJTUG and any individual authors listed elsewhere in this file.
-
-This work may be distributed and/or modified under the
-conditions of the LaTeX Project Public License (LPPL), either
-version 1.3c of this license or (at your option) any later
-version.  The latest version of this license is in the file:
-
-http://www.latex-project.org/lppl.txt
-
-This work has the LPPL maintenance status `maintained'.
-The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
-
-\endpreamble
-
-\usedir{tex/latex/sjtuthesis}
-\generate{
-  \file{\jobname.cls}{\from{\jobname.dtx}{class}}
-  \file{\jobname.cfg}{\from{\jobname.dtx}{config}}
-}
-%</install>
-%<install>\endbatchfile
-%<*internal>
-\nopostamble
-\usedir{source/latex/sjtuthesis}
-\generate{
-  \file{\jobname.ins}{\from{\jobname.dtx}{install}}
-}
-\ifx\fmtname\nameofplainTeX
-  \expandafter\endbatchfile
-\else
-  \expandafter\endgroup
-\fi
-%</internal>
-% \fi
-%
-% \iffalse
-%<*driver>
-\ProvidesFile{sjtuthesis.dtx}
-%</driver>
-%<class>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-%<class>\ProvidesClass{sjtuthesis}
-%<config>\ProvidesFile{sjtuthesis.cfg}
-%<*(class|config)>
+%%
+%% This is file `sjtuthesis.cls',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% sjtuthesis.dtx  (with options: `class')
+%% 
+%% Copyright (C) 2009-2018
+%% SJTUG and any individual authors listed elsewhere in this file.
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License (LPPL), either
+%% version 1.3c of this license or (at your option) any later
+%% version.  The latest version of this license is in the file:
+%% 
+%% http://www.latex-project.org/lppl.txt
+%% 
+%% This work has the LPPL maintenance status `maintained'.
+%% The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
+%% 
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesClass{sjtuthesis}
     [2018/01/11 v1.0.0rc Shanghai Jiao Tong University Thesis Template]
-%</(class|config)>
-%<*driver>
-\documentclass{ltxdoc}
-\usepackage{hypdoc}
-  \hypersetup{
-    bookmarksopen=true,
-    bookmarksnumbered=true,
-    CJKbookmarks=true,
-    unicode=true,
-    allcolors=blue,
-  }
-\usepackage[paper=a4paper,hmargin={1.5in,1in},vmargin=1.5in]{geometry}
-\usepackage[UTF8,scheme=chinese]{ctex}
-\usepackage{newpxtext}
-\usepackage{newpxmath}
-\usepackage{metalogo}
-\DeclareRobustCommand\file{\nolinkurl}
-\DeclareRobustCommand\env{\texttt}
-\DeclareRobustCommand\pkg{\textsf}
-\DeclareRobustCommand\cls{\textsf}
-\DeclareRobustCommand\option{\texttt}
-\def\sjtuthesis{\textsc{SJTU}\-\textsc{Thesis}}
-
-\EnableCrossrefs
-\CodelineIndex
-\RecordChanges
-
-\begin{document}
-  \DocInput{\jobname.dtx}
-\end{document}
-%</driver>
-% \fi
-%
-% \GetFileInfo{\jobname.dtx}
-%
-% \DoNotIndex{\newcommand,\newenvironment}
-%
-% \def\indexname{索引}
-% \def\glossaryname{修改记录}
-% \IndexPrologue{\section{\indexname}}
-% \GlossaryPrologue{\section{\glossaryname}}
-%
-% \title{\bfseries\sjtuthesis：上海交通大学学位论文模板}
-% \author{\href{https://github.com/sjtug/SJTUThesis}{SJTUG}}
-% \date{\fileversion\ (\filedate)}
-%
-%\maketitle
-%
-% \changes{v0.1a}{2009/11/12}{上海交通大学硕士学位论文 \LaTeX 模板发布。}
-%
-% \begin{abstract}
-% ==== Put abstract text here. ====
-% \end{abstract}
-%
-% \section{Usage}
-%
-% ==== Put descriptive text here. ====
-%
-% \DescribeMacro{\dummyMacro}
-% This macro does nothing.\index{doing nothing|usage} It is merely an
-% example.  If this were a real macro, you would put a paragraph here
-% describing what the macro is supposed to do, what its mandatory and
-% optional arguments are, and so forth.
-%
-% \DescribeEnv{dummyEnv}
-% This environment does nothing.  It is merely an example.
-% If this were a real environment, you would put a paragraph here
-% describing what the environment is supposed to do, what its
-% mandatory and optional arguments are, and so forth.
-%
-%\StopEventually{
-%  \PrintChanges
-%  \PrintIndex
-%}
-%
-% \clearpage
-% \appendix
-%
-% \section{代码实现}
-%
-% \subsection{选项的定义和处理}
-%
-% 使用Key=Value方式进行选项设置，定义前缀和族。
-%    \begin{macrocode}
-%<*class>
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{
   family=sjtu,
   prefix=sjtu@,
   setkeys=\kvsetkeys}
-%    \end{macrocode}
-%
-% 定义学位类型
-%    \begin{macrocode}
 \newif\ifsjtu@bachelor
 \newif\ifsjtu@master
 \newif\ifsjtu@doctor
@@ -167,30 +42,10 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
 \DeclareVoidOption{bachelor}{\sjtu@deprecated@degree@option}
 \DeclareVoidOption{master}{\sjtu@deprecated@degree@option}
 \DeclareVoidOption{doctor}{\sjtu@deprecated@degree@option}
-%    \end{macrocode}
-%
-% 是否启用英文模版。
-%    \begin{macrocode}
 \DeclareBoolOption{english}
-%    \end{macrocode}
-%
-% 盲审论文，隐去作者姓名、学号、导师姓名、致谢、发表论文和参与的项目。
-%    \begin{macrocode}
 \DeclareBoolOption{review}
-%    \end{macrocode}
-%
-% 定稿提交的论文，插入签名扫描版的原创性声明、授权声明。
-%    \begin{macrocode}
 \DeclareBoolOption{submit}
-%    \end{macrocode}
-%
-% 将选项传递给 \pkg{ctexbook}。
-%    \begin{macrocode}
 \DeclareDefaultOption{\PassOptionsToClass{\CurrentOption}{ctexbook}}
-%    \end{macrocode}
-%
-% 解析用户传递过来的选项，并加载 \pkg{ctexbook}。
-%    \begin{macrocode}
 \ProcessKeyvalOptions*\relax
 \ifsjtu@english
   \PassOptionsToClass{scheme=plain}{ctexbook}
@@ -209,95 +64,26 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
     \fi
   \fi
 \fi
-%    \end{macrocode}
-%
-% 使用 \XeTeX\ 引擎时，\pkg{fontspec} 宏包会被 \pkg{xeCJK} 自动调用。传递
-% 给 \pkg{fontspec} 宏包 \option{no-math} 选项，避免部分数学符号字体自动调整
-% 为 CMR。其他引擎下没有这个问题，这一行会被无视。
-%    \begin{macrocode}
 \PassOptionsToPackage{no-math}{fontspec}
-%    \end{macrocode}
-%
-% 使用 \pkg{ctexbook} 类，优于调用 \pkg{ctex} 宏包。
-%    \begin{macrocode}
 \LoadClass[a4paper,UTF8,linespread=1.3]{ctexbook}
-%    \end{macrocode}
-%
-% \subsection{载入宏包}
-%
-% 引用的宏包和相应的定义。
-%    \begin{macrocode}
 \RequirePackage{etoolbox}
 \RequirePackage{calc}
 \RequirePackage{ifxetex}
-%    \end{macrocode}
-%
-% mathtools 宏包，用来排出更加漂亮的公式。
-%    \begin{macrocode}
 \RequirePackage{mathtools,amsthm}
-%    \end{macrocode}
-%
-% 图形支持宏包。
-%    \begin{macrocode}
 \RequirePackage{graphicx}
-%    \end{macrocode}
-%
-% 用 \pkg{caption} 宏包设置图、表的格式
-% 注意计算 belowskip 必须用 \pkg{calc} 宏包修正。
-%    \begin{macrocode}
 \RequirePackage{caption}
-%    \end{macrocode}
-%
-% 用 \pkg{bicaption} 提供的双语题注支持
-%    \begin{macrocode}
 \RequirePackage[list=off]{bicaption}
-%    \end{macrocode}
-%
-% 并排图形。\pkg{subfigure}、\pkg{subfig} 已经不再推荐，用新的 \pkg{subcaption}。
-%    \begin{macrocode}
 \RequirePackage{subcaption}
-%    \end{macrocode}
-%
-% \pkg{pdfpages} 宏包便于我们插入扫描后的授权页和声明页 PDF 文档。
-%    \begin{macrocode}
 \RequirePackage{pdfpages}
 \includepdfset{fitpaper=true}
-%    \end{macrocode}
-%
-% 更好的列表环境。
-%    \begin{macrocode}
 \RequirePackage[inline]{enumitem}
-%    \end{macrocode}
-%
-% 脚注按页编号，置于底部。
-%    \begin{macrocode}
 \RequirePackage[perpage, bottom]{footmisc}
-%    \end{macrocode}
-%
-% 表格控制
-%    \begin{macrocode}
 \RequirePackage{array}
 \RequirePackage{multirow}
 \RequirePackage{longtable}
-%    \end{macrocode}
-%
-% 使用三线表：\cs{toprule}，\cs{midrule}，\cs{bottomrule}。
-%    \begin{macrocode}
 \RequirePackage{booktabs}
-%    \end{macrocode}
-%
-% xcolor用来提供色彩支持。
-%    \begin{macrocode}
 \RequirePackage{xcolor}
-%    \end{macrocode}
-%
-% 参考文献引用宏包。
-%    \begin{macrocode}
 \RequirePackage[backend=biber,style=gb7714-2015,seconds=true]{biblatex}
-%    \end{macrocode}
-%
-% hyperref宏包。
-%    \begin{macrocode}
 \RequirePackage{hyperref}
 \ifxetex
   \hypersetup{%
@@ -317,11 +103,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   plainpages=false,
   pdfstartview=FitH,
   pdfborder=0 0 0}
-%    \end{macrocode}
-%
-% \subsection{页面设置}
-%
-%    \begin{macrocode}
 \RequirePackage{geometry}
 \geometry{%
   paper      = a4paper,
@@ -330,35 +111,15 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   left       = 3.3cm,
   right      = 2.8cm,
   headheight = 0.5cm}
-%    \end{macrocode}
-%
-% 利用 \pkg{fancyhdr} 设置页眉页脚。
-%    \begin{macrocode}
 \RequirePackage{fancyhdr}
-%    \end{macrocode}
-%
-% 利用 \pkg{pageslts} 管理页码。
-%    \begin{macrocode}
 \RequirePackage{pageslts}
-%    \end{macrocode}
-%
-% 空白页不加页眉。
-%    \begin{macrocode}
 \patchcmd\cleardoublepage
   {\newpage}
   {\thispagestyle{empty}\newpage}
   {}{}
-%    \end{macrocode}
-%
-% 清除开章页页面格式。
-%    \begin{macrocode}
 \patchcmd\chapter
   {\thispagestyle{\CTEX@chapter@pagestyle}}
   {}{}{}
-%    \end{macrocode}
-%
-% 本科学位论文页码样式。
-%    \begin{macrocode}
 \ifsjtu@english
   \def\sjtu@value@titlemark{\sjtu@titleEn}
   \newcommand\sjtu@fancyhead{\footnotesize\kaishu}
@@ -371,15 +132,7 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
     {\small 第~{\bfseries{#1}}~页\,共~{\bfseries{#2}}~页}
 \fi
 \def\markboxwidth{0.75\textwidth}
-%    \end{macrocode}
-%
-% 本科学位论文页眉页脚设置
-%    \begin{macrocode}
 \ifsjtu@bachelor
-%    \end{macrocode}
-%
-% 前言页眉页脚
-%    \begin{macrocode}
   \fancypagestyle{front}{%
     \fancyhf{}
     \fancyhead[L]{\includegraphics{figure/sjtubanner}}
@@ -389,10 +142,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
     \fancyfoot[C]{\sjtu@fancyfoot{\thepage}{\lastpageref{pagesLTS.Roman}}}
     \renewcommand{\headheight}{32pt}
   }
-%    \end{macrocode}
-%
-% 正文页眉页脚
-%    \begin{macrocode}
   \fancypagestyle{main}{%
     \fancyhf{}
     \fancyhead[L]{\includegraphics{figure/sjtubanner}}
@@ -402,10 +151,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
     \fancyfoot[C]{\sjtu@fancyfoot{\thepage}{\lastpageref{pagesLTS.arabic}}}
     \renewcommand{\headheight}{32pt}
   }
-%    \end{macrocode}
-%
-% 英文大摘要页眉页脚
-%    \begin{macrocode}
   \fancypagestyle{biglast}{%
     \fancyhf{}
     \fancyhead[L]{\includegraphics{figure/sjtubanner}}
@@ -417,10 +162,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
                       {\lastpageref{pagesLTS.roman.local}}}
     \renewcommand{\headheight}{32pt}
   }
-%    \end{macrocode}
-%
-% 研究生学位论文页眉页脚设置
-%    \begin{macrocode}
 \else
   \fancypagestyle{main}{%
     \fancyhf{}
@@ -430,15 +171,7 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
     \renewcommand{\headheight}{32pt}
   }
 \fi
-%    \end{macrocode}
-%
-% 论文扉页起页码改为大写拉丁字母编号。
-%    \begin{macrocode}
 \AtBeginDocument{\pagenumbering{Alph}}
-%    \end{macrocode}
-%
-% 将 frontmatter 的页码改为大写的罗马数字，并调整页面风格。
-%    \begin{macrocode}
 \renewcommand\frontmatter{%
   \cleardoublepage
   \@mainmatterfalse
@@ -453,11 +186,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   \@mainmattertrue
   \pagestyle{main}
   \pagenumbering{arabic}}
-%    \end{macrocode}
-%
-% \subsection{章节标题}
-%
-%    \begin{macrocode}
 \ctexset{%
   contentsname   = \sjtu@contentsname,
   listfigurename = \sjtu@listfigurename,
@@ -490,31 +218,16 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   paragraph/afterindent    = true,
   subparagraph/afterindent = true,
 }
-%    \end{macrocode}
-%
-% \subsection{目录}
-%
-%    \begin{macrocode}
 \patchcmd\tableofcontents
   {\chapter}
   {\cleardoublepage%
    \pdfbookmark[0]{\contentsname}{toc}%
    \chapter}
   {}{}
-%    \end{macrocode}
-%
-% \subsection{浮动对象}
-%
-% 下面这组命令使浮动对象的缺省值稍微宽松一点，从而防止幅度对象占据过多的文本页面， 也可以防止在很大空白的浮动页上放置很小的图形。
-%    \begin{macrocode}
 \renewcommand{\textfraction}{0.15}
 \renewcommand{\topfraction}{0.85}
 \renewcommand{\bottomfraction}{0.65}
 \renewcommand{\floatpagefraction}{0.60}
-%    \end{macrocode}
-%
-% 定制表格和插图的题注样式。
-%    \begin{macrocode}
 \DeclareCaptionFont{kaishu}{\kaishu}
 \captionsetup{%
   format        = plain,
@@ -531,27 +244,15 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
 \DeclareCaptionOption{bi-second}[]{%
   \def\tablename{Table}
   \def\figurename{Figure}}
-%    \end{macrocode}
-%
-% 定公式、图、表、算法、代码的编号为"3-1"的形式，即分隔符由.变为短杠
-%    \begin{macrocode}
 \AtBeginDocument{%
   \renewcommand{\theequation}{\thechapter--\arabic{equation}}
   \renewcommand{\thefigure}{\thechapter--\arabic{figure}}
   \renewcommand\p@subfigure{\thefigure}
   \renewcommand{\thetable}{\thechapter--\arabic{table}}
 }
-%    \end{macrocode}
-%
-% 使用enumitem宏包配制列表环境。紧凑间距，列表和段落头对齐。
-%    \begin{macrocode}
 \setlist{nosep}
 \setlist*{leftmargin=*}
 \setlist[1]{labelindent=\parindent}
-%    \end{macrocode}
-%
-% 定理环境
-%    \begin{macrocode}
 \newtheoremstyle{break}% name
   {}%      Space above, empty = `usual value'
   {}%      Space below
@@ -579,11 +280,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   \newtheorem{bprop}[thm]{\sjtu@key@prop~}
   \newtheorem{bcor}[thm]{\sjtu@key@cor~}
   \renewcommand{\proofname}{\bfseries\sjtu@key@proof}
-%    \end{macrocode}
-%
-% \subsection{绘制封面}
-%
-%    \begin{macrocode}
 \def\sjtu@def@term#1{%
   \define@key{sjtu}{#1}{\csname #1\endcsname{##1}}
   \expandafter\gdef\csname #1\endcsname##1{%
@@ -605,51 +301,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
 \sjtu@def@term{dateZh}
 \sjtu@def@term{dateEn}
 \def\sjtusetup{\kvsetkeys{sjtu}}
-%</class>
-%    \end{macrocode}
-%
-%    \begin{macrocode}
-%<*config>
-\def\sjtu@key@schoolZh{上海交通大学}
-\def\sjtu@key@schoolEn{Shanghai Jiao Tong University}
-
-\ifsjtu@bachelor
-  \def\sjtu@key@authorZh{学生姓名}
-  \def\sjtu@key@id{学生学号}
-  \def\sjtu@key@advisorZh{指导教师}
-  \def\sjtu@degreeZh{学士}
-  \def\sjtu@degreeEn{Bachelor}
-\else
-  \def\sjtu@key@authorZh{论文作者}
-  \def\sjtu@key@id{学号}
-  \def\sjtu@key@advisorZh{导师}
-  \ifsjtu@master
-    \def\sjtu@degreeZh{硕士}
-    \def\sjtu@degreeEn{Master}
-  \else
-    \ifsjtu@doctor
-      \def\sjtu@degreeZh{博士}
-      \def\sjtu@degreeEn{Doctor}
-    \fi
-  \fi
-\fi
-\def\sjtu@key@advisorEn{Advisor}
-\def\sjtu@key@coadvisorZh{副导师}
-\def\sjtu@key@coadvisorEn{Co-advisor}
-\def\sjtu@key@major{专业}
-\def\sjtu@key@title{论文题目}
-\def\sjtu@key@thesis{学位论文}
-\def\sjtu@key@defenddate{答辩日期}
-\def\sjtu@key@institute{学院(系)}
-\def\sjtu@key@statementZh{申请\sjtu@key@schoolZh\sjtu@degreeZh\sjtu@key@thesis}
-\def\sjtu@key@statementEn{%
-  Submitted in total fulfillment of the requirements for the
-  degree of \sjtu@degreeEn \\ in \sjtu@majorEn}
-%</config>
-%    \end{macrocode}
-% 
-%    \begin{macrocode}
-%<*class>
 \renewcommand\maketitle{%
   \pdfbookmark[0]{\sjtu@titlepage}{titlepage}
   \ifsjtu@bachelor
@@ -659,10 +310,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
     \makeenglishtitle
   \fi
 }
-%    \end{macrocode}
-%
-% 研究生论文中文标题页
-%    \begin{macrocode}
 \newcommand\makechinesetitle{%
   \cleardoublepage
   \thispagestyle{empty}
@@ -694,15 +341,11 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   \vskip \stretch{0.5}
   \cleardoublepage
 }
-%    \end{macrocode}
-%
-% 研究生论文英文标题页
-%    \begin{macrocode}
 \newcommand\makeenglishtitle{%
   \cleardoublepage
   \thispagestyle{empty}
   \begin{center}
-      {\normalfont\zihao{4} \sjtu@key@statementEn} 
+      {\normalfont\zihao{4} \sjtu@key@statementEn}
       \vspace{20pt} \vskip\stretch{1}
       {\huge\sjtu@titleEn \vskip 1pt}
       \vskip \stretch{1}
@@ -711,27 +354,23 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
       \vskip 3pt
       \vskip \stretch{2}
     \else
-      {\normalfont\zihao{4}\sjtu@authorEn} 
+      {\normalfont\zihao{4}\sjtu@authorEn}
       \vskip \stretch{1}
-      {\normalfont\zihao{4}\sjtu@key@advisorEn} 
+      {\normalfont\zihao{4}\sjtu@key@advisorEn}
       \vskip 2pt
-      {\normalfont\zihao{4}\sjtu@advisorEn} 
+      {\normalfont\zihao{4}\sjtu@advisorEn}
       \vskip 5pt
       \ifdefstring{\sjtu@coadvisorEn}{}{\relax}{%
-        {\normalfont\zihao{4}\sjtu@key@coadvisorEn} 
+        {\normalfont\zihao{4}\sjtu@key@coadvisorEn}
         \vskip 2pt
-        {\normalfont\zihao{4}\sjtu@coadvisorEn} 
+        {\normalfont\zihao{4}\sjtu@coadvisorEn}
         \vskip \stretch{2}}
-    \fi 
+    \fi
     \normalfont\sjtu@instituteEn \vskip 30pt
     \normalfont\sjtu@dateEn \vskip 20pt
   \end{center}
   \cleardoublepage
 }
-%    \end{macrocode}
-%
-% 学士论文中文标题页
-%    \begin{macrocode}
 \newcommand\makechinesetitle@bachelor{%
   \cleardoublepage
   \thispagestyle{empty}
@@ -772,10 +411,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   \end{center}
   \cleardoublepage
 }
-%    \end{macrocode}
-%
-% 原创性声明
-%    \begin{macrocode}
 \newcommand\makeDeclareOriginal{%
   \cleardoublepage
   \thispagestyle{empty}
@@ -791,10 +426,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   \hspace{16em}\sjtu@key@originalDate\hspace{1em}
   \cleardoublepage
 }
-%    \end{macrocode}
-%
-% 授权声明
-%    \begin{macrocode}
 \newcommand\makeDeclareAuthorization{%
   \cleardoublepage
   \thispagestyle{empty}
@@ -810,10 +441,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   \sjtu@key@originalDate\hfill\hspace{3em}\sjtu@key@originalDate
   \cleardoublepage
 }
-%    \end{macrocode}
-%
-% 中英文摘要
-%    \begin{macrocode}
 \newenvironment{abstract}{%
   \cleardoublepage
   \pdfbookmark[0]{\sjtu@key@abstract}{abstract}
@@ -841,10 +468,6 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   \vspace{2ex}
   \noindent{\bfseries\large \sjtu@key@englishkeywords}{#1}
 }
-%    \end{macrocode}
-%
-% 主要符号对照表
-%    \begin{macrocode}
 \newenvironment{nomenclaturename}{\cleardoublepage
 \chapter{\sjtu@nomenclature}{}}{}
 
@@ -914,14 +537,14 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
 \newenvironment{resume}
   {\chapter{\sjtu@key@resume}}
   {}
-  
+
 \newenvironment{resumesection}[1]
   {{\noindent\normalfont\bfseries #1}
    \list{}{\labelwidth\z@
            \leftmargin 2\ccwd}
    \item\relax}
   {\endlist}
-   
+
 \newenvironment{resumelist}[1]
   {{\noindent\normalfont\bfseries #1}
    \list{}{\labelwidth\z@
@@ -930,7 +553,7 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
            \listparindent\itemindent}
    \item\relax}
   {\endlist}
-   
+
 \renewenvironment{thanks}{%
   \chapter*{%
     \sjtu@key@thanks
@@ -938,7 +561,7 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
   }
   \addcontentsline{toc}{chapter}{\sjtu@key@thanks}
 }{}
- 
+
 \newenvironment{summary}{%
   \chapter*{%
     \sjtu@key@summary
@@ -960,121 +583,7 @@ The Current Maintainers of this work are Jianwen Wei and Alexara Wu.
 
 \AtEndOfClass{\input{sjtuthesis.cfg}}
 
-%</class>
-%    \end{macrocode}
-%
-%    \begin{macrocode}
-%<*config>
-%% labels in the title page
-%% string values filled in the title page
-%% 论文原创性声明
-\def\sjtu@key@original{学位论文原创性声明}
-\def\sjtu@key@authorZhization{学位论文版权使用授权书}
-\def\sjtu@key@authorZhsign{学位论文作者签名：}
-\def\sjtu@key@Supervisorsign{指导教师签名：}
-\def\sjtu@key@originalDate{%
-  日\hspace{1em}期：\hrulefill\hrulefill 年
-                   \hrulefill 月 \hrulefill 日}
-\def\sjtu@key@originalcontent{%
-  本人郑重声明：所呈交的学位论文，是本人在导师的指导下，独立进行研
-  究工作所取得的成果。除文中已经注明引用的内容外，本论文不包含任何
-  其他个人或集体已经发表或撰写过的作品成果。对本文的研究做出重要贡
-  献的个人和集体，均已在文中以明确方式标明。本人完全意识到本声明的
-  法律结果由本人承担。}
-\def\sjtu@key@authorZhizationcontent{%
-  本学位论文作者完全了解学校有关保留、使用学位论文的规定，同意学校
-  保留并向国家有关部门或机构送交论文的复印件和电子版，允许论文被查
-  阅和借阅。本人授权上海交通大学可以将本学位论文的全部或部分内容编
-  入有关数据库进行检索，可以采用影印、缩印或扫描等复制手段保存和汇
-  编本学位论文。\par
-  本学位论文属于 \\
-  \hspace*{9em}\textbf{保\hspace{1em}密} $\square$，
-    在~\hrulefill~年解密后适用本授权书。\\
-  \hspace*{9em}\textbf{不保密} $\square$。\\
-    （请在以上方框内打$\checked$）
-}
-
-%% labels in the abstracts
-\def\sjtu@key@chineseabstract{摘~~~~要}
-\def\sjtu@key@englishabstract{Abstract}
-\def\sjtu@key@keywords{关键词：}
-\def\sjtu@key@englishkeywords{KEY WORDS:~}
-
-\ifsjtu@english
-
-%% labels in the titlepage, contents, lists, etc.
-\def\sjtu@titlepage{Title Page}
-\def\sjtu@key@abstract{\sjtu@key@englishabstract}
-\def\sjtu@contentsname{Contents}
-\def\sjtu@figurename{Figure}
-\def\sjtu@listfigurename{List of Figures}
-\def\sjtu@tablename{Table}
-\def\sjtu@listtablename{List of Tables}
-\def\sjtu@algorithmicrequire{Input:}
-\def\sjtu@algorithmicensure{Output:}
-\def\sjtu@listalgorithmname{List of Algorithms}
-\def\sjtu@nomenclature{Nomenclature}
-\DefineBibliographyStrings{english}{%
-  bibliography = {Bibliography}
-}
-\def\sjtu@key@summary{Summary}
-\def\sjtu@key@publications{Publications}
-\def\sjtu@key@patents{Patents}
-\def\sjtu@key@projects{Projects}
-\def\sjtu@key@resume{Resume}
-\def\sjtu@key@thanks{Acknowledgements}
-\def\sjtu@value@listingname{Code}
-%% the theorem name definitions
-\def\sjtu@key@algo{Algorithm}
-\def\sjtu@key@thm{Theorem}
-\def\sjtu@key@lem{Lemma}
-\def\sjtu@key@prop{Proposition}
-\def\sjtu@key@cor{Corollary}
-\def\sjtu@key@defn{Definition}
-\def\sjtu@key@conj{Conjecture}
-\def\sjtu@key@exmp{Example}
-\def\sjtu@key@rem{Remark}
-\def\sjtu@key@case{Case}
-\def\sjtu@key@proof{Proof}
-
-\else
-
-%% 目录、插图索引、表格索引
-\def\sjtu@titlepage{扉~~~~页}
-\def\sjtu@key@abstract{\sjtu@key@chineseabstract}
-\def\sjtu@contentsname{目~~~~录}
-\def\sjtu@figurename{图}
-\def\sjtu@listfigurename{插图索引}
-\def\sjtu@tablename{表}
-\def\sjtu@listtablename{表格索引}
-\def\sjtu@algorithmicrequire{输入:}
-\def\sjtu@algorithmicensure{输出:}
-\def\sjtu@listalgorithmname{算法索引}
-\def\sjtu@nomenclature{主要符号对照表}
-\def\sjtu@key@summary{全文总结}
-\def\sjtu@key@publications{攻读学位期间发表的学术论文}
-\def\sjtu@key@patents{攻读学位期间申请的专利}
-\def\sjtu@key@projects{攻读学位期间参与的项目}
-\def\sjtu@key@resume{简~~~~历}
-\def\sjtu@key@thanks{致~~~~谢}
-\def\sjtu@value@listingname{代码}
-%% the theorem name definitions
-\def\sjtu@key@algo{算法}
-\def\sjtu@key@thm{定理}
-\def\sjtu@key@lem{引理}
-\def\sjtu@key@prop{命题}
-\def\sjtu@key@cor{推论}
-\def\sjtu@key@defn{定义}
-\def\sjtu@key@conj{猜想}
-\def\sjtu@key@exmp{例}
-\def\sjtu@key@rem{注}
-\def\sjtu@key@case{情形}
-\def\sjtu@key@proof{证明}
-
-\fi
-%</config>
-%    \end{macrocode}
-%
-%\Finale
 
 \endinput
+%%
+%% End of file `sjtuthesis.cls'.

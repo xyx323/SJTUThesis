@@ -1,0 +1,132 @@
+%%
+%% This is file `sjtuextra.sty':
+%% extra packages and configuration.
+%%
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{sjtuextra}
+
+\RequirePackage{amsfonts,amssymb,bm}
+
+% upper math letter
+\newcommand{\me}{\mathrm{e}} 
+\newcommand{\mi}{\mathrm{i}}
+\newcommand{\mj}{\mathrm{j}}
+\newcommand{\dif}{\mathrm{d}}
+
+\RequirePackage{upgreek}
+\RequirePackage{wasysym}
+
+\RequirePackage{hologo}
+\def\XeTeX{\hologo{XeTeX}}
+\def\BibTeX{\hologo{BibTeX}}
+\def\CJKLaTeX{CJK--\LaTeX} 
+
+% A new column type
+\RequirePackage{dcolumn}
+\newcolumntype{d}[1]{D{.}{.}{#1}}% or D{.}{,}{#1} or D{.}{\cdot}{#1}
+
+
+% Set fontnote font size in threeparttable
+\RequirePackage{threeparttable}
+\appto\TPTnoteSettings{\footnotesize}
+
+% Setting Package siunitx
+\RequirePackage{siunitx}
+\sisetup{detect-all} % Detecting fonts
+
+\RequirePackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
+% 流程图定义基本形状
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{io} = [trapezium, trapezium left angle=75, trapezium right angle=105, minimum width=1cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{process} = [rectangle, minimum width=2cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{decision} = [diamond, minimum width=2cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+
+\RequirePackage{listings}
+% Setting Package listings/lstlistings
+\lstset{tabsize=4, %
+  frame=shadowbox, %把代码用带有阴影的框圈起来
+  commentstyle=\color{red!50!green!50!blue!50},%浅灰色的注释
+  rulesepcolor=\color{red!20!green!20!blue!20},%代码块边框为淡青色
+  keywordstyle=\color{blue!90}\bfseries, %代码关键字的颜色为蓝色，粗体
+  showstringspaces=false,%不显示代码字符串中间的空格标记
+  stringstyle=\ttfamily, % 代码字符串的特殊格式
+  keepspaces=true, %
+  breakindent=22pt, %
+  numbers=left,%左侧显示行号
+  stepnumber=1,%
+  numberstyle=\tiny, %行号字体用小号
+  basicstyle={\footnotesize\ttfamily}, %
+  showspaces=false, %
+  flexiblecolumns=true, %
+  breaklines=true, %对过长的代码自动换行
+  breakautoindent=true,%
+  breakindent=4em, %
+  aboveskip=1em, %代码块边框
+  %% added by http://bbs.ctex.org/viewthread.php?tid=53451
+  fontadjust,
+  captionpos=t,
+  framextopmargin=2pt,framexbottommargin=2pt,abovecaptionskip=-9pt,belowcaptionskip=9pt,
+  xleftmargin=4em,xrightmargin=4em, % 设定listing左右的空白
+  texcl=true,
+  % 设定中文冲突，断行，列模式，数学环境输入，listing数字的样式
+  extendedchars=false,columns=flexible,mathescape=true
+  numbersep=-1em
+}
+
+\renewcommand{\lstlistingname}{\sjtu@value@listingname}
+\AtBeginDocument{%
+\renewcommand{\thelstlisting}{\thechapter--\arabic{lstlisting}}}
+
+\RequirePackage{algorithm, algorithmicx, algpseudocode}
+
+\floatname{algorithm}{\sjtu@key@algo}
+\renewcommand{\algorithmicrequire}{\textbf{\sjtu@algorithmicrequire}} 
+\renewcommand{\algorithmicensure}{\textbf{\sjtu@algorithmicensure}}
+\renewcommand{\listalgorithmname}{\sjtu@listalgorithmname}
+
+% Ref https://github.com/sjtug/SJTUThesis/issues/186
+\@addtoreset{algorithm}{chapter}% algorithm counter resets every chapter
+
+\AtBeginDocument{%
+\renewcommand{\thealgorithm}{\thechapter--\arabic{algorithm}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The following definitions add Switch statement to LaTeX algorithmicx package
+% It's based on Werner's answer on stackoverflow
+% http://tex.stackexchange.com/questions/53357/switch-cases-in-algorithmic  
+
+% New definitions
+\algnewcommand\algorithmicswitch{\textbf{switch}}
+\algnewcommand\algorithmiccase{\textbf{case}}
+\algnewcommand\algorithmicdefault{\textbf{default}}
+
+\patchcmd\@chapter
+  {\if@twocolumn}
+  {\addtocontents{loa}{\protect\addvspace{10\p@}}%
+   \if@twocolumn}
+  {}{}
+
+% New "environments"
+% using \algtext*{<env>} removes any typesetting of that command
+\algdef{SE}[SWITCH]{Switch}{EndSwitch}[1]{\algorithmicswitch\ (#1)}{\algorithmicend\ \algorithmicswitch}%
+%\algtext*{EndSwitch}%
+\algdef{SE}[CASE]{Case}{EndCase}[1]{\algorithmiccase\ #1:}{\algorithmicend\ \algorithmiccase}%
+\algtext*{EndCase}%
+\algdef{SE}[DEFAULT]{Default}{EndDefault}{\algorithmicdefault\ :}{\algorithmicend\ \algorithmicdefault}%
+\algtext*{EndDefault}%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The following add some extra commands to LaTeX algorithmicx package
+
+% Assert
+\algnewcommand\algorithmicassert{\texttt{assert}}
+\algnewcommand\Assert[1]{\State \algorithmicassert(#1)}%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\endinput
+%%
+%% End of file `sjtuextra.sty'.
