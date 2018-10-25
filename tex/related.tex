@@ -545,19 +545,30 @@
 
 \chapter{相关技术与研究现状分析}
 \label{chap:related}
-\section{SQL查询语句的自动生成技术现状分析}
+% \section{SQL查询语句的自动生成技术现状分析}
 % \subsection{面向最终用户的SQL代码生成的现状分析}
 % \subsection{}
 
-\section{基于人机交互的SQL查询语句生成技术}
-
-\section{自然语言生成SQL查询语句技术}
+\section{基于映射的SQL查询语句生成技术}
+\subsection{字典映射}
+\subsection{解析树映射}
+\section{基于深度学习的SQL查询语句生成技术}
 \subsection{语义解析}
-
-\subsection{机器翻译}
+SQL query generation is related to semantic parsing. Models based on the
+WikiSQL dataset [Zhong et al., 2017] translate natural language questions into structured SQL
+queries so that users can interact with a database in natural language. WikiSQL is evaluated by a
+logical form exact match (lfEM) to ensure that models do not obtain correct answers from incorrectly
+generated queries.
+\subsection{序列-序列模型及机器翻译}
 
 \subsection{深度强化学习}
 
 \subsection{多任务学习}
+In the past, transfer learning has been indispensable for the greatest success in using the correlation between natural language tasks. Word2Vec [Mikolov et al., 2013a,b], skip-thought vectors [Kiros et al., 2015] and GloVe [Pennington et al., 2014] generated pre-trained embeddings, which successfully expressed usefulness in natural language. The embeddings [Collobert and Weston, 2008, Collobert et al., 2011], intermediate expression [Peters et al., 2018], the weight of the language model can be migrated to a similar structure [Ramachandran et al., 2017] and classification problems [Howard and Ruder, 2018]. The performance of question-and-answer systems, sentiment analysis, and natural language reasoning [McCann et al., 2017] was enhanced by intermediate representations from supervised machine translation models. Question answering datasets can support each other and entailment tasks[Min et al., 2017], while high-resource machine translation can support low-resource machine translation [Zoph et al., 2016].
 
+The unified architectures include chunking, part-of-speech tagging, named entity recognition and semantic role tags [Collobert et al., 2011] and dependency analysis, semantic correlation and natural language reasoning [Hashimoto et al., 2016]. Zero-shot translation can be achieved by multitasking on machine translation problems in different languages [Johnson et al., 2017], while sequence-to-sequence models can use multiple encoder and decoders for translation, parsing, and image subtitles[Luong et al., 2015a]. These tasks can also be learned by careful modularization of image classification and speech recognition [Kaiser et al., 2017]. This approach has also been successfully applied in the field of visual and textual question answering [Xiong et al., 2016]. Learning this modularity can further alleviate interruption between tasks [Ruder et al., 2017].
+
+When the correlation between tasks is used by the model to mitigate interruption from different tasks, it can be said that multitasking has been successful [Caruana, 1997]. When tasks are very relevant, they can provide inductive bias [Mitchell, 1980], which forces the model to learn more generally applicable expressions. These relationships can be explored by integrating these tasks at a single level [Wang et al., 2018, Poliak et al., 2018a, b].
+
+The purpose of meta-learning is to train a model that can cope with various tasks, and it is easy to learn new tasks [Thrun and Pratt, 1998, Thrun, 1998, Vilalta and Drissi, 2002]. Past work on this topic includes how to learn the rules of “learning” [Schmidhuber, 1987, Bengio et al., 1992], training meta-agents that can control parameter updates [Hochreiter et al., 2001, Andrychowicz et al., 2016], optimizing the model through special memory mechanisms [Santoro et al., 2016, Schmidhuber, 1992], and maximize the ability of models to learn new tasks [Finn et al., 2017].
 \section{本章小节}
