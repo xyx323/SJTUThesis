@@ -88,17 +88,37 @@
 % A: 烦请在模板的\href{https://github.com/sjtug/SJTUThesis}{github主页}点击“Star”，我想粗略统计一下使用学位论文模板的人数，谢谢大家。非常欢迎大家向项目贡献代码。
 
 
-\chapter{基于映射的NLI2SQL生成}
+\chapter{基于映射的INLI2SQL生成}
 \label{chap:interaction}
 \section{研究问题}
 
 一直以来，自然语言接口是人机交互领域的终极追求，也是人机交互、机器学习领域专家孜孜不倦钻研学习的热门问题。
-对于本文所指出的业务层面与技术层面之间的矛盾，如果能对最终用户提供一个自然语言接口，使得我们的系统能直接从最终用户的自然语言中理解到用户的查询意图，并结合数据库，直接生成符合查询意图的SQL语句返回给用户，那么这一矛盾就可以非常自然和优美地得到解决。
-因此，本章将对从自然语言生成SQL语句的技术和模型进行探究，尝试寻找一种解决方案，能提供自然语言接口给非技术用户，让用户通过以自然语言表达的查询意图，得到目标SQL语句。
+交互式自然语言接口生成SQL查询语句（INLI2SQL）的关键问题就是怎样使得我们的系统能在与用户的多轮交互之下理解到用户的查询意图，并结合数据库直接生成符合查询意图的SQL语句返回给用户。
+其主要过程为：用户首先输入自然语言查询语句以及给出对应的数据库表模式，系统接收到输入后判断输入的正确性并和用户产生多轮交互，在交互完成并确认输出有效后将对应的SQL查询语句及执行结果输出。
+% 因此，本章将对从自然语言生成SQL语句的技术和模型进行探究，尝试寻找一种解决方案，能提供自然语言接口给非技术用户，让用户通过以自然语言表达的查询意图，得到目标SQL语句。
 
-自然语言理解存在许多难题，如歧义、语序，或者存在复杂的依赖结构等等，要完全基于自然语言理解来进行SQL生成是很困难的，效果可能会不尽如人意。
-所以，受到人机交互思想的启发，本文将使用自然语言理解与人机交互相结合的方式，来进行从自然语言到目标SQL语句的转化。
-对于自然语言意图，先对自然语言进行初步解析和理解，并在其中插入人机交互机制，让用户来引导生成的过程，指导自然语言理解，纠正机器理解过程中出现的错误、歧义、含糊不清的问题，从而提升整体的准确性。
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=15cm]{example/nli.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {基于映射的INLI2SQL生成示例}
+    {English caption}
+  \label{fig:NLI}
+\end{figure}
+
+
+
+图\ref{fig:NLI}中给出了基于映射的INLI2SQL生成中的典型的例子。
+用户首先输入自然语言查询语句“Return the altitude of Willis Tower in Chicago”以及给出对应的数据库表模式（包含表、列名等）。
+系统判断出两个有效过滤条件即‘Name’=‘Willis Tower ’和‘Location’=‘Chicago’但不确认聚合函数是否为‘SELECT’及其对象是否为‘Height(ft)’。系统返回一个包含{‘Name’=‘Willis Tower ’; ‘Location’=‘Chicago’}和{‘select’=[‘Height(ft)’,’Floor’,’Year’]}的交互项。
+其中{‘Name’=‘Willis Tower ’; ‘Location’=‘Chicago’}为json格式并表示为已经确认的信息，{‘select’=[‘Height(ft)’,’Floor’,’Year’]}为json格式表示需要用户在‘Height(ft)’,’Floor’,’Year’中做出选择。
+用户接受到交互信息后进行选择并发送包含{‘select’=‘Height(ft)’}的json数据。
+最后，系统在多轮交互并确认输出有效后将对应的SQL查询语句‘SELECT ‘Height(ft)’ WHERE Name=‘Willis Tower’ AND Location=‘Chicago’及执行结果‘1,451’输出。
+
+% 自然语言理解存在许多难题，如歧义、语序，或者存在复杂的依赖结构等等，要完全基于自然语言理解来进行SQL生成是很困难的，效果可能会不尽如人意。
+% 所以，受到人机交互思想的启发，本文将使用自然语言理解与人机交互相结合的方式，来进行从自然语言到目标SQL语句的转化。
+% 对于自然语言意图，先对自然语言进行初步解析和理解，并在其中插入人机交互机制，让用户来引导生成的过程，指导自然语言理解，纠正机器理解过程中出现的错误、歧义、含糊不清的问题，从而提升整体的准确性。
+
 
 
 \section{相关技术}
@@ -321,40 +341,68 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
     \label{fig:NLIclassicmodel}
   \end{figure}
 
-\subsection{实验结果}
-
 实验所使用的自然语言查询数据集由作者根据Classicmodels数据库的模式建立，根据查询意图的复杂度，分为简单、中等、困难三类。每种类别，提出了20条自然语言查询，共计60条，用来测试模型的准确性。
-表3-4给出了三种类别的自然语言查询示例。
-
-此处有多个表。
+表\ref{nli:zryycxsl}给出了三种类别的自然语言查询示例。
 
 \begin{table}[!hpb]
     \centering
     \bicaption[指向一个表格的表目录索引]
-      {t1}
+      {自然语言查询实例}
       {A Table}
-    \label{nli:t1}
-    \begin{tabular}{@{}llr@{}} \toprule
+    \label{nli:zryycxsl}
+    \begin{tabular}{cc} \toprule
       % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-      1  & 	test\\\bottomrule
+      查询语句复杂度 & 示例\\\midrule
+      简单 & return all the custormers\\
+      中等 & return all the offices in London\\
+      困难 & return the city of office that has an employee named Diane\\
+      \bottomrule
     \end{tabular}
   \end{table}
 
+\subsection{实验结果}
+
+首先将所有自然语言查询语句，输入系统，经过各组件的处理，得到系统生成的SQL语句，再判断其是否正确表达了自然语言查询语句的意图。
+实验结果如表\ref{nli:mxscsyjdzqx}所示。
+
 \begin{table}[!hpb]
     \centering
     \bicaption[指向一个表格的表目录索引]
-      {t2}
+      {模型生成SQL语句的准确性}
       {A Table}
-    \label{nli:t2}
-    \begin{tabular}{@{}llr@{}} \toprule
+    \label{nli:mxscsyjdzqx}
+    \begin{tabular}{cc} \toprule
       % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-      1  & 	test\\\bottomrule
+      查询语句复杂度 & 准确率\\\midrule
+      简单 & 100\%\\
+      中等 & 80\%\\
+      困难 & 35\%\\
+      \bottomrule
     \end{tabular}
+\end{table}
+
+实验还检验了在没有用户交互指定节点映射、选择合适树结构的情况下，模型生成SQL语句的准确性，如表\ref{nli:mxzwjhqkxscsyjdzqx}所示；
+由于没有选择合适树结构，导致解析树结构调整之后有多个候选结果，最后返回结果也会有多个，故只要返回结果中包含正确SQL语句，就视做正确生成：
+
+\begin{table}[!hpb]
+  \centering
+  \bicaption[指向一个表格的表目录索引]
+    {模型在无交互情况下生成SQL语句的准确性}
+    {A Table}
+  \label{nli:mxzwjhqkxscsyjdzqx}
+  \begin{tabular}{cc} \toprule
+    % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
+    查询语句复杂度 & 准确率\\\midrule
+    简单 & 65\%\\
+    中等 & 50\%\\
+    困难 & 15\%\\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
 \subsection{实验分析}
 \begin{enumerate}
-    \item   经过两次实验，分别检验完整模型和无交互机制模型生成SQL语句的准确性。可以看出，交互机制对于模型的准确性有很大的提升；而加入了交互机制后，模型可以比较准确的处理简单和中等复杂度的查询意图，即便是复杂度较高的查询意图，本文提出的模型仍然可以正确生成一部分困难复杂度的SQL语句。在实验过程中，经常出现节点歧义需要映射，如“price”一词可以映射到“products”表中的“buyPrice”，也有可能映射到“orderdetails”表中的“priceEach”。那么对于测试语句“return order details whose price is higher than 50”，如果没有交互机制，对于“price”这个节点的映射就会优先映射到“products”中的“buyPrice”，而实际上应该映射到“orderdetails”表中的“priceEach”。可以看出，交互机制在节点映射这一部分准确率的提升，大大影响了整体模型的准确率。
+    \item 经过两次实验，分别检验完整模型和无交互机制模型生成SQL语句的准确性。可以看出，交互机制对于模型的准确性有很大的提升；而加入了交互机制后，模型可以比较准确的处理简单和中等复杂度的查询意图，即便是复杂度较高的查询意图，本文提出的模型仍然可以正确生成一部分困难复杂度的SQL语句。在实验过程中，经常出现节点歧义需要映射，如“price”一词可以映射到“products”表中的“buyPrice”，也有可能映射到“orderdetails”表中的“priceEach”。那么对于测试语句“return order details whose price is higher than 50”，如果没有交互机制，对于“price”这个节点的映射就会优先映射到“products”中的“buyPrice”，而实际上应该映射到“orderdetails”表中的“priceEach”。可以看出，交互机制在节点映射这一部分准确率的提升，大大影响了整体模型的准确率。
     \item	在作者构造的自然语句查询意图数据集中，简单复杂度的查询意图大体上是返回某数据表中某一字段，中等复杂度的查询意图会添加一些聚合函数和简单过滤条件，困难复杂度的意图会增加更多的聚合函数和跨表查询，总体上来说结构都比较简单。在表3-5所示的结果中，困难复杂度意图的错误生成情况，一部分来源于查询意图对应的SQL语句需要子查询，如“return the customer who has the most orders”。目前的模型还不能很好的处理这一种情况，在解析树语法和翻译过程中都还没考虑子查询的情况，这可能是接下来需要进一步进行的工作，即提升模型的处理能力，使其能处理更复杂的查询意图。
     \item	目前模型基于相似度的节点映射机制仍然有不足之处，如“return the mobile number of custormer whose name is Australian Gift Network”这一查询意图，对于顾客名称“Australian Gift Network”，系统会将其映射为三个不同的节点，导致生成出错。尽管模型对于数据库模式中的一些连接词或短语，如“thenumberof”、“customername”，进行了特殊处理，但对于上文所示的这些特殊短语或词语，目前没有较好的方法来进行处理。
     \item	本文自行建立了一个解析树节点类型与自然语言单词的映射词典（表\ref{nli:jxsjddlx}），能处理一些常见的单词与SQL语法的对应关系，如“return”、“in”、“have”、“thenumberof”，但映射关系仍然不足，所以本实验所使用的测试查询意图都需要使用这些比较固定的词语来构建。事实上，自然语言的表达非常多样，如果要增加模型的处理能力，扩充这个映射词典也是非常必要的。

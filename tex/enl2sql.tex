@@ -14,14 +14,15 @@
 
 \section{研究问题}
 
-随着计算机技术的快速发展与应用，关系型数据库被广泛应用于教育、医疗、商业等领域。
-作为信息存储的载体，越来越多的软件开发和业务人员正频繁使用SQL查询语句来读取关系型数据库中的数据。
-SQL语句用法多样且功能强大，但对于一个没有技术背景的使用者来说却是一场噩梦。
-即便是一名专业的软件人员，在面对数据库中众多的实体以及每个实体都有自己独特的含义时，想要把SQL语句写正确也不是一件容易的事情。
-因此，学术界和工业界一直都在思考如何更快更好地使用SQL语句来读取数据，其中最理想和最直接的方式便是直接让使用者使用自然语言从数据库中获取所需信息。
+% 随着计算机技术的快速发展与应用，关系型数据库被广泛应用于教育、医疗、商业等领域。
+% 作为信息存储的载体，越来越多的软件开发和业务人员正频繁使用SQL查询语句来读取关系型数据库中的数据。
+% SQL语句用法多样且功能强大，但对于一个没有技术背景的使用者来说却是一场噩梦。
+% 即便是一名专业的软件人员，在面对数据库中众多的实体以及每个实体都有自己独特的含义时，想要把SQL语句写正确也不是一件容易的事情。
+% 因此，学术界和工业界一直都在思考如何更快更好地使用SQL语句来读取数据，其中最理想和最直接的方式便是直接让使用者使用自然语言从数据库中获取所需信息。
 
-实现这个目标的关键在于如何去理解自然语言语句的意图并讲其映射到SQL语句上，简称为NL2SQL(Nature Language To SQL Statement)，即自然语言生成SQL查询语句任务。
-在NL2SQL任务中，一个典型的例子如图\ref{fig:nl2sqlexample}给出。
+基于深度强化学习的NL2SQL生成的模型的总输入表示为$x$，其包含由单词$w_{i}$组成的自然语言问题$w$以及由列名$c_{j}$组成的数据库单张表的模式 $c$（其中，列名$c_{j}$可由单个或多个单词组成）。
+模型的输出为一条可执行的SQL查询语句$y$以及其在数据库中执行的结果$r$。
+我们通过给出NL2SQL任务中一个典型的例子（如图\ref{fig:nl2sqlexample}所示）来进一步说明。
 
 \begin{figure}[!htp]
     \centering
@@ -32,39 +33,46 @@ SQL语句用法多样且功能强大，但对于一个没有技术背景的使�
     \label{fig:nl2sqlexample}
   \end{figure}
 
-图\ref{fig:nl2sqlexample}为WikiSQL数据集[！！引用！！]中的一个样例。
-WikiSQL数据集是纯自然语言生成SQL查询语句的第一个数据集。
-其中包含80654组自然语言问句及其对应的SQL查询语句，涵盖24241张从Wikipedia中获取的数据表。
-从图中可以看到，NL2SQL任务的输入实际包括两部分：自然语言问题以及一个简单的数据表schema（schema代表数据表及表中的列）。
+在图\ref{fig:nl2sqlexample}中，$w$代表自然语言问题“What is  the height of Willis Tower in Chicago?”，其中$w_0,w_1,w_2,...$分别代表单词“What”、“is”、“the”等。
+$c$代表数据库表的模式“Name Location Height(ft) Floor Year”，其中$c_0,c_1,c_2,...$分别代表单词“Name”、“Location”、“Height(ft)”等。
+总输入$x$代表由$w$和$c$组成的集合。
+模型的输出$y$在该示例中对应的SQL查询语句为“SELECT ‘Height(ft)’ WHERE Name=‘Willis Tower’ AND Location=‘Chicago’”，其在数据库中执行的结果$r$为1451。
 
-WikiSQL数据集中SQL查询语句具有一定的约束条件，必须符合如下模板：
+基于深度强化学习的NL2SQL生成的关键问题在于如何去理解自然语言语句的意图并在一次交互的状态下将意图映射到SQL查询语句上，
+即在知道数据库表模式$c$的状态下，将用户输入的自然语言问题$w$转换为一条SQL查询语句$y$并得到数据库执行结果$r$。
 
-\begin{table}[!hpb]
-    \centering
-    \bicaption[指向一个表格的表目录索引]
-      {SQL查询语句模板}
-      {A Table}
-    \label{nli:sqlmb}
-    \begin{tabular}{@{}llr@{}} \toprule
-      % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-    %   节点类型 & 对应的SQL组件\\\midrule
-    \emph{SELECT   agg   selcol   WHERE   col   op   val   (AND   col   op   val)*}\\\bottomrule
+% 图\ref{fig:nl2sqlexample}为WikiSQL数据集[！！引用！！]中的一个样例。
+% WikiSQL数据集是纯自然语言生成SQL查询语句的第一个数据集。
+% 其中包含80654组自然语言问句及其对应的SQL查询语句，涵盖24241张从Wikipedia中获取的数据表。
+% 从图中可以看到，NL2SQL任务的输入实际包括两部分：自然语言问题以及一个简单的数据表schema（schema代表数据表及表中的列）。
+
+% WikiSQL数据集中SQL查询语句具有一定的约束条件，必须符合如下模板：
+
+% \begin{table}[!hpb]
+%     \centering
+%     \bicaption[指向一个表格的表目录索引]
+%       {SQL查询语句模板}
+%       {A Table}
+%     \label{nli:sqlmb}
+%     \begin{tabular}{@{}llr@{}} \toprule
+%       % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
+%     %   节点类型 & 对应的SQL组件\\\midrule
+%     \emph{SELECT   agg   selcol   WHERE   col   op   val   (AND   col   op   val)*}\\\bottomrule
   
-      % Animal & Description & Price (\$)\\ \midrule
-      % Gnat & per gram & 13.65 \\
-      % & each & 0.01 \\
-      % Gnu & stuffed & 92.50 \\
-      % Emu & stuffed & 33.33 \\
-      % Armadillo & frozen & 8.99 \\ \bottomrule
-    \end{tabular}
-  \end{table}
+%       % Animal & Description & Price (\$)\\ \midrule
+%       % Gnat & per gram & 13.65 \\
+%       % & each & 0.01 \\
+%       % Gnu & stuffed & 92.50 \\
+%       % Emu & stuffed & 33.33 \\
+%       % Armadillo & frozen & 8.99 \\ \bottomrule
+%     \end{tabular}
+%   \end{table}
 
-  在\ref{nli:sqlmb}中，\emph{selcol}代表表中的列名，\emph{agg}代表聚合操作（例如：COUNT,SUM或空），
-  \emph{WHERE}后面为由一系列过滤调教构成的子句，每个\emph{op}代表一个过滤操作（例如：“=”），\emph{val}代表出现在自然语言问句中的过滤值。
-  值得注意的是，尽管模板中的过滤条件服从标准的线性顺序，但由于存在\emph{AND}符号，所以过滤条件的先后顺序是无关紧要的。
+%   在\ref{nli:sqlmb}中，\emph{selcol}代表表中的列名，\emph{agg}代表聚合操作（例如：COUNT,SUM或空），
+%   \emph{WHERE}后面为由一系列过滤调教构成的子句，每个\emph{op}代表一个过滤操作（例如：“=”），\emph{val}代表出现在自然语言问句中的过滤值。
+%   值得注意的是，尽管模板中的过滤条件服从标准的线性顺序，但由于存在\emph{AND}符号，所以过滤条件的先后顺序是无关紧要的。
 
-  在后文中，我们声明如下一些表示：总输入表示为$x$，其包含由单词$w_{i}$组成的自然语言问题$w$以及由列名$c_{j}$组成的单张表的schema $c$（其中，列名$c_{j}$可由单个或多个单词组成）。
-  最后，我们的模型需要生成一条可执行的SQL查询语句$y$作为输出。
+  
 
 \section{相关技术}
 \subsection{NL2SQL研究现状}
@@ -216,9 +224,31 @@ $||$表示列表展开；$COND_{-1}$表示在列表中的上一个元素；
 \subsection{编码器}
 \label{enl2sql:encoder}
 
-增强解析器模型的架构如图xx所示。
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=15cm]{example/nl2sqlapproach.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {基于深度强化学习的NL2SQL生成的技术方案}
+    {English caption}
+  \label{fig:nl2sqlapproach}
+\end{figure}
 
-增强解析器模型包含编码器和解码器两个部分，其中编码器的具体步骤如下：
+基于深度强化学习的NL2SQL生成的技术方案如图\ref{fig:nl2sqlapproach}所示。
+包括xxxxx（此处有一大段）。
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=15cm]{example/nl2sqlnet.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {基于深度强化学习的NL2SQL生成网络}
+    {English caption}
+  \label{fig:nl2sqlnet}
+\end{figure}
+
+
+其中基于深度强化学习的NL2SQL生成网络包含编码器和解码器两个部分，如图\ref{fig:nl2sqlnet}所示。
+
+编码器的具体步骤如下：
 \begin{enumerate}
   \item 对于输入的句子$w$中的每个单词$w_i$，先将其使用词向量进行向量编码(word embedding[！！引用！！])。
   \item 将其送入一个双向的长短期记忆网络（bi-directional Long Short-Term Memory，简称bi-LSTM）,其中每个细胞(cell)会有一个隐状态$h^W_i$。
@@ -347,6 +377,38 @@ WikiSQL虽然在SQL语法上的覆盖范围比之前的数据集（例如，ATIS
 
 \subsection{实验结果}
 \subsubsection{WIKISQL实验结果}
+
+图\ref{fig:nl2sqlexample}为WikiSQL数据集[！！引用！！]中的一个样例。
+WikiSQL数据集是纯自然语言生成SQL查询语句的第一个数据集。
+其中包含80654组自然语言问句及其对应的SQL查询语句，涵盖24241张从Wikipedia中获取的数据表。
+从图中可以看到，NL2SQL任务的输入实际包括两部分：自然语言问题以及一个简单的数据表schema（schema代表数据表及表中的列）。
+
+WikiSQL数据集中SQL查询语句具有一定的约束条件，必须符合如下模板：
+
+\begin{table}[!hpb]
+    \centering
+    \bicaption[指向一个表格的表目录索引]
+      {SQL查询语句模板}
+      {A Table}
+    \label{nli:sqlmb}
+    \begin{tabular}{@{}llr@{}} \toprule
+      % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
+    %   节点类型 & 对应的SQL组件\\\midrule
+    \emph{SELECT   agg   selcol   WHERE   col   op   val   (AND   col   op   val)*}\\\bottomrule
+  
+      % Animal & Description & Price (\$)\\ \midrule
+      % Gnat & per gram & 13.65 \\
+      % & each & 0.01 \\
+      % Gnu & stuffed & 92.50 \\
+      % Emu & stuffed & 33.33 \\
+      % Armadillo & frozen & 8.99 \\ \bottomrule
+    \end{tabular}
+  \end{table}
+
+  在\ref{nli:sqlmb}中，\emph{selcol}代表表中的列名，\emph{agg}代表聚合操作（例如：COUNT,SUM或空），
+  \emph{WHERE}后面为由一系列过滤调教构成的子句，每个\emph{op}代表一个过滤操作（例如：“=”），\emph{val}代表出现在自然语言问句中的过滤值。
+  值得注意的是，尽管模板中的过滤条件服从标准的线性顺序，但由于存在\emph{AND}符号，所以过滤条件的先后顺序是无关紧要的。
+
 \begin{table}[!htpb]
   \bicaption[出现在表目录的标题]
     {WikiSQL中验证集和测试集的准确度}
@@ -472,11 +534,75 @@ ATIS数据集包含更多样的SQL结构，包括对多个表的查询以及嵌�
 
 \textbf{Spider数据集实验}
 
-详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容。
-详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容。
-详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容。
-详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容。
-详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容详细内容。
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=15cm]{example/spider.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {spider数据集样例}
+    {English caption}
+  \label{fig:spiderxample}
+\end{figure}
+
+spider数据集是一个由11名耶鲁大学学生标注的大型的跨域的包含语义解析和文本到SQL语句的数据集。
+其挑战的目标为开发在跨域的数据集上开发自然语言接口。
+spider数据集由200个数据库中的10181个问题和5693个SQL查询语句组成，并且其中有很多表覆盖了138个不同的域。
+不同复杂程度的SQL查询会出现在训练集和测试集中，如图\ref{fig:spiderxample}中所示。
+这也就要求模型需要具有较好的拓展性，从而适应新的SQL查询语句以及新的数据库模式。
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=10cm]{example/spiderchart.png}
+  \bicaption[这里将出现在插图索引中]
+    {spider数据集的组成}
+    {English caption}
+  \label{fig:spiderchart}
+\end{figure}
+
+如图\ref{fig:spiderchart}所示，spider数据集的1.0版本有别于其他之前的所有SQL语义解析的数据集：
+
+\begin{itemize*}
+  \item 对于ATIS, Geo和Academic数据集来说，每个数据集都只包含在一个数据库中执行的若干个SQL查询，并且SQL查询在训练集和测试集的分割时完全相同的。
+  
+  \item WikiSQL数据集中的SQL查询和表的数量都相对较大，但是所有的SQL查询语句都较为简单，并且每个数据库都只有一个没有任何外键的表。  
+\end{itemize*}
+
+所以，在spider数据集上的实验能够说明模型从简单的SQL查询语句生成到复杂的SQL查询语句生成的能力，说明模型的通用性与泛化性。
+
+\begin{table}[!htpb]
+  \bicaption[出现在表目录的标题]
+    {Spider数据集上的实验结果}
+    {A Table with footnotes}
+  \label{tab:ssjjsdsyjg}
+  \centering
+  \begin{threeparttable}[b]
+     \begin{tabular}{lcc}
+      \toprule
+      模型 & 验证集 & 测试集\\
+      % \cmidrule(lr){2-3}\cmidrule(lr){4-5}
+      % &www & \multicolumn{1}{c}{k} & www & k & www & k \\ % 使用说明符 d 的列会自动进入数学模式，使用 \multicolumn 对文字表头做特殊处理
+      % TypeSQL引用 & Acc$_{lf}$ & Acc$_{ex}$ & Acc$_{lf}$ & Acc$_{ex}$\\
+      % & Acc$_{lf}$ & Acc$_{ex}$ & Acc$_{lf}$ & Acc$_{ex}$\\
+      % TypeSQL引用 & 72.5 & 79.0 & 71.7 & 78.5\\
+      \midrule
+      Seq2Seq + attention & 1.8	& 4.8\\
+      TypeSQL & 8.0	& 8.2\\
+      SQLNet & 10.9	& 12.4\\
+      SyntaxSQLNet & 18.9	& 19.7\\
+      增强解析器（非确定性预言） + EG (5) & 23.2  & 24.1\\
+      % 增强解析器（静态预言） & 87.1 & 88.2 & 65.9 & 67.5\\
+      % 增强解析器（非确定性预言, 不解决过滤条件顺序问题） & 88.1 & 89.2 & 68.3 & 69.1\\
+      \bottomrule
+    \end{tabular}
+    % \begin{tablenotes}
+    % \item [1] the first note.% or \item [a]
+    % \item [2] the second note.% or \item [b]
+    % \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+从表\ref{tab:ssjjsdsyjg}可以看出，我们使用$ANYCOL$的非确定预言的模型进行测试，在测试集上分别达到了 23.2\%和24.1\%的准确性，超过了之前提出的所有方法。
+使用非确定预言的模型可以很好地解决过滤条件顺序问题，所以在性能上表现优异。
+同时，得益于$ANYCOL$机制对隐式列名问题的处理，在spider数据集上的表现证明了模型具有很好的泛化性能。
 
 
 \section{本章小结}
