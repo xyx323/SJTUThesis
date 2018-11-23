@@ -13,9 +13,195 @@
 \label{chap:cnl2sql}
 
 \section{研究问题}
+
+在第\ref{chap:enl2sql}章中，我们结合了深度学习与深度强化学习来解决NL2SQL的问题。
+但是，目前的所有研究都只是将英文的自然语言问题转换为机器可执行的SQL查询语句，而没有涉及到其他语种的自然语言。
+在本章中，我们主要的研究问题就是研究如何将中文的自然语言问题转换为SQL查询语句。
+其中最具挑战的地方就是怎样将中文自然语言转换为英文自然语言的任务与英文自然语言生成SQL查询语句有机地结合起来。
+
+基于多任务学习的NL2SQL生成的模型的总输入表示为$x$，其包含由单词$w_{i}$组成的自然语言问题$w$以及由列名$c_{j}$组成的数据库单张表的模式 $c$（其中，列名$c_{j}$可由单个或多个单词组成）。
+模型的输出为一条可执行的SQL查询语句$y$以及其在数据库中执行的结果$r$。
+我们通过给出NL2SQL任务中一个典型的例子（如图\ref{fig:nl2sqlexample}所示）来进一步说明。
+
+\begin{figure}[!htp]
+    \centering
+    \includegraphics[width=17cm]{example/cnl2sql.pdf}
+    \bicaption[这里将出现在插图索引中]
+      {中文自然语言问题生成SQL查询语句的示例}
+      {English caption}
+    \label{fig:cnl2sqlexample}
+  \end{figure}
+
+在图\ref{fig:cnl2sqlexample}中，$w$代表中文自然语言问题“芝加哥的威利斯大厦有多少层？”，其中$w_0,w_1,w_2,...$分别代表单词“芝加哥”、“的”、“威利斯大厦”等。
+$c$代表数据库表的模式“Name Location Height(ft) Floor Year”，其中$c_0,c_1,c_2,...$分别代表单词“Name”、“Location”、“Height(ft)”等。
+总输入$x$代表由$w$和$c$组成的集合。
+在将中文的自然语言问题转换为SQL查询语句的过程中会生成中间结果“How  many  floors  does  the  Willis  Tower  in  Chicago  have?”，即将中文翻译为英文，记作$m$。
+模型的输出$y$在该示例中对应的SQL查询语句为“SELECT ‘Floor’ WHERE Name=‘Willis Tower’ AND Location=‘Chicago’”，其在数据库中执行的结果$r$为108。
+
+基于多任务学习的NL2SQL生成的主要任务是要在将中文翻译为英文的同时，理解中文自然语言语句的意图并在一次交互的状态下将意图映射到SQL查询语句上，
+即在知道数据库表模式$c$的状态下，将用户输入的自然语言问题$w$最终转换为一条SQL查询语句$y$并得到数据库执行结果$r$。
+
 \section{相关技术}
+\subsection{迁移学习与多任务学习}
+\subsection{元学习}
+
 \section{解决方案}
+
+在本节中，我们会介绍如何把中文自然语言翻译为英文自然语言任务与英文自然语言生成SQL查询语句任务进行统一，之后提出一种基于多任务学习的神经网络结构并解释说明为何这样的网络结构可以有效地解决中文自然语言问题生成SQL查询语句问题。
+
+\subsection{TCR模板}
+
+首先，中文自然语言问题生成SQL查询语句可以被划分为两个子任务：中文自然语言翻译为英文自然语言任务和英文自然语言问题生成SQL查询语句任务。
+在第\ref{chap:enl2sql}章中，本文提出的基于深度强化学习的解决方案已经可以有效的解决NL2SQL问题，并且在WikiSQL数据集和spider数据集上有优异的表现。
+所以，我们会有一个非常自然的想法，就是直接使用翻译工具或翻译软件将中文的自然语言问题直接转换为英文自然语言问题，之后再使用\ref{enl2sql:zqjxqmx}节中提出的增强解析器模型将英文自然语言转换为SQL查询语句。
+但是，这种方法会遇到许多问题，如图\ref{fig:cnl2sqlproblem}所示（其中中文自然语言均使用谷歌翻译自动翻译为英文自然语言）：
+
+\begin{figure}[!htp]
+    \centering
+    \includegraphics[width=17cm]{example/cnl2sqlproblem.pdf}
+    \bicaption[这里将出现在插图索引中]
+      {中文自然语言问题生成SQL查询语句的错误示例}
+      {English caption}
+    \label{fig:cnl2sqlproblem}
+  \end{figure}
+
+从图\ref{fig:cnl2sqlproblem}中的示例一可以看出，数据库表模式中的列名为“College”,而谷歌翻译将中文“大学”翻译为“University”。
+而示例二中的“层”翻译为了“layers”而不是“floors”。
+形如这一类的问题会给SQL的生成带来很大的问题。
+
+究其原因，从中文自然语言到英文自然语言再到SQL查询语句这一过程是一个紧密关联的过程，如果将其拆分为两个部分，则翻译的过程中将会丢失大量的数据库、SQL语言本身的很多信息。
+所以，我们提出TCR模板用以将这两个独立的任务有机的统一起来，并在作为下节中的多任务学习网络的输入。
+
+\begin{figure}[!htp]
+    \centering
+    \includegraphics[width=17cm]{example/tcr.pdf}
+    \bicaption[这里将出现在插图索引中]
+      {TCR模板（任务-内容-结果模板）}
+      {English caption}
+    \label{fig:cnl2sqltcr}
+  \end{figure}
+
+如图\ref{fig:cnl2sqltcr}所示，我们将中文自然语言翻译为英文自然语言任务和英文自然语言生成SQL查询语句任务使用TCR模板（任务-内容-结果）进行统一。
+例如，“告诉我南澳有哪些注意要点”先翻译为英文，其任务为“What is the translation from Chinese to English?”（意为需要执行的任务是中文到英文的翻译），内容为“告诉我南澳有哪些注意要点”（指在表明所需要翻译的中文自然语句是什么），结果为“Tell me what the notes are for South Australia”。
+而后再将“Tell me what the notes are for South Australia”转换为SQL查询语句，其任务为“What is the translation from English to SQL?”（意为需要执行的任务是英文到SQL的生成），内容为“The table has column names… Tell me what the notes are for South Australia”（指在表明所需的信息由表的列名以及英文自然语言的查询构成），结果为“SELECT notes from table WHERE ‘Current Slogan’ =‘South Australia”，从而完成生成的全过程。
+
+TCR模板将两个任务的模式进行了统一，使得网络模型的输入和输出得以一致，而不用设计两个不同的网络结构来处理这两个任务。
+在后文中，我们还将这个模板用于自然语言处理领域中的很多任务，详见\ref{cnl2sql:syyfx}节。
+
+\subsection{多任务网络}
+
+由于我们会使用TCR模板对每个任务进行统一并且在训练阶段采用联合训练的方法，我们把所使用的神经网络的结构称为多任务网络。
+近几年来，有许多研究者所研究的问答模型的和我们的模型比较类似，但是通常的问答模型往往假设模型得到的答案的片段是可以直接从上下文信息中复制，但是我们的多任务网络适用于更一般的问答场景。
+在之前的TCR模板中，任务对应于问答模型中的问题，内容对应于问答模型中的上下文，而结果对应于问答模型中的回答。
+由于TCR模板中的任务往往包含限制搜索空间的非常关键的信息，我们会在多任务网络中使用了协同注意力机制[！！引用！！]并加以拓展，从而使得对模型输入的表示更加丰富。
+此外，多任务网络还采用了指针机制[！！引用！！]，并将其改造为分层的多指针生成器，使得网络能够直接从任务和内容中进行文本的复制。
+
+在训练阶段，多任务网络的输入序列会有三个部分，分别为：由$l$个单词构成的内容$c$；
+由$m$个单词构成的任务$q$；由$n$个单词构成的结果$a$。
+其中，每个输入序列都是一个矩阵，矩阵中的第$i$行对应于序列中的第$i$个词的嵌入(embedding)（可为字符向量或词向量），维度为$d_{emb}$。有公式\ref{cnl2sqleq:drwwl1}：
+\begin{equation}
+    \label{cnl2sqleq:drwwl1}
+    C \in \mathbb{R}^{l \times d_{emb}} \qquad Q \in \mathbb{R}^{m \times d_{emb}} \qquad A \in \mathbb{R}^{n \times d_{emb}}
+  \end{equation}
+
+\subsection{编码器}
+\label{cnl2sql:encoder}
+
+编码器将内容矩阵$C$、任务矩阵$Q$和结果矩阵$A$作为输入，
+使用深度栈式循环神经网络[！！引用！！]，结合协同注意力机制(coattention)[！！引用！！]和自注意力机制(self-attention)[！！引用！！],
+来生成编码阶段的最终的表示$C_{fin} \in \mathbb{R}^{l \times d}$和$Q_{fin} \in \mathbb{R}^{m \times d}$（即编码之后的内容信息和任务信息），
+并且还可以让网络学习到他们之间的局部和全局的相互依赖关系。
+在下文中，我们将对编码器进行进一步的说明。
+
+\textbf{单独编码阶段}
+
+首先使用一个简单的线性层将输入矩阵投射到$d$维的空间上，如公式\ref{cnl2sqleq:encoder1}。
+\begin{equation}
+    \label{cnl2sqleq:encoder1}
+    CW_1 = C_{proj} \in \mathbb{R}^{l \times d} \qquad QW_1 = Q_{proj} \in \mathbb{R}^{m \times d} 
+  \end{equation}
+这些投射之后的表示将被输入给一个共享的双向长短期记忆网络(bi-LSTM)[！！引用！！][注释]，如公式\ref{cnl2sqleq:encoder2}。
+\begin{equation}
+    \label{cnl2sqleq:encoder2}
+    BILSTM_{ind}(C_{proj}) = C_{ind} \in \mathbb{R}^{l \times d} \qquad BILSTM_{ind}(Q_{proj}) = Q_{ind} \in \mathbb{R}^{l \times d}
+\end{equation}
+
+\textbf{对准阶段}
+
+在获得协同注意力的表达之前，我们需要先对每个序列的编码表达进行对准。
+我们会分别给$C_{ind}$和$Q_{ind}$增加一个预训练的嵌入使得现在的$C_{ind} \in \mathbb{R}^{(l+1) \times d}$以及$Q_{ind} \in \mathbb{R}^{(m+1) \times d}$，
+这样做可以让每个单词不会和序列中的某个单词强制对准。
+
+令$softmax(X)$表示逐列进行softmax操作，即矩阵$X$中的每列进行标准化后的和为1。
+我们将内容信息的序列表示与任务序列表示之间进行点积计算得到相似性得分，并使用归一化操作来获得数据的对准，如公式\ref{cnl2sqleq:encoder3}：
+\begin{equation}
+  \label{cnl2sqleq:encoder3}
+  softmax(C_{ind}Q_{ind}^{\top}) = S_{cq} \in \mathbb{R}^{(l+1) \times (m+1)} \qquad softmax(Q_{ind}C_{ind}^{\top}) = S_{qc} \in \mathbb{R}^{(m+1) \times (l+1)}
+\end{equation}
+
+\textbf{对偶协同注意力阶段}
+
+再对准之后，我们要去计算一个序列中的某个单词和另一个序列中相关的单词的加权求和，如公式\ref{cnl2sqleq:encoder4}。
+\begin{equation}
+  \label{cnl2sqleq:encoder4}
+  S_{cq}^{\top}C_{ind} = C_{sum} \in \mathbb{R}^{(m+1) \times d} \qquad S_{qc}^{\top}Q_{ind} = Q_{sum} \in \mathbb{R}^{(l+1) \times d}
+\end{equation}
+
+对偶协同注意力就是要通过同样的权重将对准时得到的信息传递给原序列，如公式\ref{cnl2sqleq:encoder5}。
+\begin{equation}
+  \label{cnl2sqleq:encoder5}
+  S_{qc}^{\top}C_{sum} = C_{coa} \in \mathbb{R}^{(l+1) \times d} \qquad S_{cq}^{\top}Q_{sum} = Q_{coa} \in \mathbb{R}^{(m+1) \times d}
+\end{equation}
+
+可以发现，进行了加权求和和协同注意力的表示中的第一列为之前我们添加进去的冗余的嵌入。
+在这里我们不再需要这一个嵌入，所以将矩阵中的这一列去除掉，得到$C_{coa} \in \mathbb{R}^{l \times d}$和$Q_{coa} \in \mathbb{R}^{m \times d}$。
+
+\textbf{压缩阶段}
+
+为了将对偶协同注意力操作之前的信息压缩至$d$维，我们接着把之前得到的四种序列表示进行拼接并输入一个单独的双向LSTM中，如公式\ref{cnl2sqleq:encoder6}。
+\begin{align}
+  \label{cnl2sqleq:encoder6}
+  BiLSTM_{comC}([C_{proj};C_{ind};Q_{sum};C_{coa}]) =  C_{com} \in \mathbb{R}^{m \times d}\\
+  BiLSTM_{comQ}([Q_{proj};Q_{ind};C_{sum};Q_{coa}]) =  Q_{com} \in \mathbb{R}^{m \times d}
+\end{align}
+
+\textbf{自注意力阶段}
+
+接着，我们使用一个多头的放缩点积注意力机制（multi-head, scaled dot-product attention）[！！引用！！]来捕获每个序列内部的长距离的依赖性，其表达式为公式\ref{cnl2sqleq:encoder7}。
+
+\begin{gather}
+  \label{cnl2sqleq:encoder7}
+  Attention(\widetilde{X},\widetilde{Y},\widetilde{Z}) = softmax\{\frac{\widetilde{X}\widetilde{Y}^{\top}}{\sqrt{d}}\} \widetilde{Z}\\
+  MultiHead(\widetilde{X},\widetilde{Y},\widetilde{Z}) = [h_1;\cdots;h_p]W^o \qquad \mbox{其中}h_j= Attention(\widetilde{X}W^{\widetilde{X}}_j,\widetilde{Y}W^{\widetilde{Y}}_j,\widetilde{Z}W^{\widetilde{Z}}_j)
+\end{gather}
+
+公式\ref{cnl2sqleq:encoder7}中变换都为线性变换，所以多头注意力机制可以维持$d$维不变，有公式\ref{cnl2sqleq:encoder8}：
+\begin{equation}
+  \label{cnl2sqleq:encoder8}
+  MultiHead_C(C_{com},C_{com},C_{com}) = C_{mha} \qquad MultiHead_Q(Q_{com},Q_{com},Q_{com}) = Q_{mha}
+ \end{equation}
+
+之后，我们使用了一个残差前馈网络（feedforward networks，简称FFN）如公式\ref{cnl2sqleq:encoder9}，其中$U \in \mathbb{R}^{d \times f}$，$V \in \mathbb{R}^{f \times d}$。其激活函数为Relu函数[！！引用！！],并且在输入和输出都使用了正则化(layer normalization)[！！引用！！]。
+\begin{gather}
+  \label{cnl2sqleq:encoder9}
+  FFN(X) = \max(0,XU)V + X\\
+  FFN_C(C_{com} + C_{mha}) = C_{self} \in \mathbb{R}^{l \times d} \qquad FFN_Q(Q_{com} + Q_{mha}) = Q_{self} \in \mathbb{R}^{m \times d}
+\end{gather}
+
+\textbf{编码结束阶段}
+
+最后，我们使用两个双向LSTM将所有信息进行汇总并将矩阵$C_{fin}$和$Q_{fin}$输入给解码器，如公式\ref{cnl2sqleq:encoder10}。
+\begin{equation}
+  \label{cnl2sqleq:encoder10}
+  BiLSTM_{finC}(C_{self}) = C_{fin} \in \mathbb{R}^{l \times d} \qquad BiLSTM_{finQ}(Q_{self}) = Q_{fin} \in \mathbb{R}^{m \times d} 
+\end{equation}
+
+
+\subsection{解码器}
+\label{cnl2sql:decoder}
+
 \section{实验与分析}
+\label{cnl2sql:syyfx}
 \section{本章小结}
 Machine  ComprehensionQuestion answering (QA) mod-els receive a question and a context that contains informationnecessary  to  output  the  desired  answer.  We  use  the  StanfordQuestion  Answering  Dataset  (SQuAD)  []  for  this  task.  Con-texts  are  paragraphs  taken  from  the  English  Wikipedia,  andanswers  are  sequences  of  words  copied  from  the  context.SQuAD  uses  a  normalized  F1  (nF1)  metric  that  strip  outarticles and punctuation.Machine Translation.Machine translation models receivean  input  document  in  a  source  language  that  must  be  trans-lated  into  a  target  language.  We  use  the  2016  English  to
 
