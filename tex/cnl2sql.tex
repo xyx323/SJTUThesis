@@ -90,11 +90,20 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \subsection{多任务网络}
 
-由于我们会使用TCR模板对每个任务进行统一并且在训练阶段采用联合训练的方法，我们把所使用的神经网络的结构称为多任务网络。
+由于我们会使用TCR模板对每个任务进行统一并且在训练阶段采用联合训练的方法，我们把所使用的神经网络的结构称为多任务网络，如图\ref{fig:cnl2sqlnet}所示。
 近几年来，有许多研究者所研究的问答模型的和我们的模型比较类似，但是通常的问答模型往往假设模型得到的答案的片段是可以直接从上下文信息中复制，但是我们的多任务网络适用于更一般的问答场景。
 在之前的TCR模板中，任务对应于问答模型中的问题，内容对应于问答模型中的上下文，而结果对应于问答模型中的回答。
 由于TCR模板中的任务往往包含限制搜索空间的非常关键的信息，我们会在多任务网络中使用了协同注意力机制[！！引用！！]并加以拓展，从而使得对模型输入的表示更加丰富。
 此外，多任务网络还采用了指针机制[！！引用！！]，并将其改造为分层的多指针生成器，使得网络能够直接从任务和内容中进行文本的复制。
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=17cm]{example/cnl2sqlnet.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {多任务网络}
+    {English caption}
+  \label{fig:cnl2sqlnet}
+\end{figure}
 
 在训练阶段，多任务网络的输入序列会有三个部分，分别为：由$l$个单词构成的内容$c$；
 由$m$个单词构成的任务$q$；由$n$个单词构成的结果$a$。
@@ -104,6 +113,8 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
     C \in \mathbb{R}^{l \times d_{emb}} \qquad Q \in \mathbb{R}^{m \times d_{emb}} \qquad A \in \mathbb{R}^{n \times d_{emb}}
   \end{equation}
 
+接下来，我们将分别详细介绍多任务网络中的编码器和解码器。
+
 \subsection{编码器}
 \label{cnl2sql:encoder}
 
@@ -111,7 +122,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 使用深度栈式循环神经网络[！！引用！！]，结合协同注意力机制(coattention)[！！引用！！]和自注意力机制(self-attention)[！！引用！！],
 来生成编码阶段的最终的表示$C_{fin} \in \mathbb{R}^{l \times d}$和$Q_{fin} \in \mathbb{R}^{m \times d}$（即编码之后的内容信息和任务信息），
 并且还可以让网络学习到他们之间的局部和全局的相互依赖关系。
-在下文中，我们将对编码器进行进一步的说明。
+在下文中，我们将对编码器的每个阶段进行进一步的说明。
 
 \textbf{单独编码阶段}
 
@@ -199,6 +210,117 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \subsection{解码器}
 \label{cnl2sql:decoder}
+
+在编码器得到最终的表示$C_{fin} \in \mathbb{R}^{l \times d}$和$Q_{fin} \in \mathbb{R}^{m \times d}$（即编码之后的内容信息和任务信息）后进入到解码器解码。
+在下文中，我们将对解码器的每个阶段进行进一步的说明。
+
+\textbf{结果表示阶段}
+
+在训练阶段，解码器首先要将结果$a$的表示投射到$d$维的空间上，如公式\ref{cnl2sqleq:decoder1}
+
+\begin{equation}
+  \label{cnl2sqleq:decoder1}
+  AW_2 = A_{proj} \in \mathbb{R}^{n \times d} 
+\end{equation}
+
+之后紧接的是一个自注意力层，该注意力层与编码器中的自注意力层相对应。
+由于该过程不包含循环和卷积操作，所以我们为$A_{proj}$加上了一个位置编码信息$x$，如公式\ref{cnl2sqleq:decoder2}。
+\begin{equation}
+  \label{cnl2sqleq:decoder2}
+  A_{proj} + PE = A_{ppr} \in \mathbb{R}^{n \times d},\qquad \mbox{其中} PE[t,k] = \{   
+  \begin{array}{lr}
+    sin(\frac{t}{10000^{\frac{k}{2d}}}) &  k\mbox{为偶数}\\
+    cos(\frac{t}{10000^{\frac{k-1}{2d}}}) &  k\mbox{为奇数}
+  \end{array}
+\end{equation}
+
+\textbf{自注意力阶段}
+接着我们使用了自注意力机制[！！引用！！]从而使得解码器能够知道之前的输出（若之前没有输出则认为之前的输出为某个初始化的单词）和相关内容是什么，从而产生下一个输出。
+在多头的注意力机制之后使用了一个残差前馈网络（FFN，其定义在\ref{cnl2sql:encoder}节中的自注意力阶段给出），如公式\ref{cnl2sqleq:decoder3}。
+
+\begin{gather}
+  \label{cnl2sqleq:decoder3}
+  MultiHead_A(A_{ppr},A_{ppr},A_{ppr}) = A_{mha} \in \mathbb{R}^{n \times d}\\
+  MultiHead_{A}C((A_{mha} + A_{ppr}),C_{fin},C_{fin}) = A_{ac} \in \mathbb{R}^{n \times d}\\
+  FFN_A(A_{ac} + A_{mha} + A_{ppr}) = A_{self} \in \mathbb{R}^{n \times d}
+\end{gather}
+
+\textbf{获得中间状态阶段}
+
+之后，我们使用了一个标准的带注意力机制的LSTM网络来对每个时刻$t$产生一个内容状态$\widetilde{c}_t$。
+这个LSTM又将使用之前的结果序列中的单词$A^{t-1}_{self}$和内容状态来生成一个中间状态$h_t$，如公式\ref{cnl2sqleq:decoder4}。
+
+\begin{equation}
+  \label{cnl2sqleq:decoder4}
+  LSTM([(A_{self})_{t-1};\widetilde{c}_{t-1}],h_{t-1})= h_t \in \mathbb{R}^{d} 
+\end{equation}
+
+\textbf{任务与内容注意力阶段}
+
+上一阶段中的中间状态可用来获得注意力权重$\alpha^C_t$以及$\alpha^Q_t$Q，解码器从而可以获得$t$时刻的编码信息，如公式\ref{cnl2sqleq:decoder5}。
+
+\begin{equation}
+  \label{cnl2sqleq:decoder5}
+  softmax(C_{fin}(W_2 h_t)) = \alpha^C_t \in \mathbb{R}^{l} \qquad softmax(Q_{fin}(W_3 h_t)) = \alpha^Q_t \in \mathbb{R}^{m}
+\end{equation}
+
+\textbf{获得内容与任务状态阶段}
+
+内容的表示将于这些权重相结合并输入给一个前馈网络从而形成内容状态与任务状态，激活函数为$tanh$，如公式\ref{cnl2sqleq:decoder6}。
+\begin{equation}
+  \label{cnl2sqleq:decoder6}
+  tanh(W_4[C^{\top}_{fin}\alpha^C_t;h_t] = \widetilde{c}_{t} \in \mathbb{R}^{d} \qquad tanh(W_5[Q^{\top}_{fin}\alpha^Q_t;h_t] = \widetilde{q}_{t} \in \mathbb{R}^{d}
+\end{equation}
+
+\textbf{多指针生成阶段}
+
+由于我们的模型必须要能够生成那些未出现在任务或内容序列中的单词，所以需要额外声明一个词汇表$v$。
+我们会从任务、内容和外部的词汇表中分别获得每个单词的概率分布，如公式\ref{cnl2sqleq:decoder7}。
+
+\begin{gather}
+  \label{cnl2sqleq:decoder7}
+  \sum_{i:c_i=w_t} (\alpha^C_t)_i = p_c(w_t) \in \mathbb{R}^{n}\\
+  \sum_{i:q_i=w_t} (\alpha^Q_t)_i = p_q(w_t) \in \mathbb{R}^{m}\\
+  softmax(W_v\widetilde{c}_t) = p_v(w_t) \in \mathbb{R}^{v}
+\end{gather}
+
+这些概率分布将会覆盖任务、内容和外部词汇表中所有单词的集合，其中却是的一些条目将会被赋为0值从而使所有分布都在$\mathbb{R}^{l+m+v}$。
+最后，我们设置两个标量开关来调节每个分布的重要程度并确认最终输出的分布，如公式\ref{cnl2sqleq:decoder8}。
+\begin{gather}
+  \label{cnl2sqleq:decoder8}
+  \sigma (W_{pv}[\widetilde{c}_t;h_t;(A_{self})_{t-1}]) = \gamma \in [0,1]\\
+  \sigma (W_{cq}[\widetilde{q}_t;h_t;(A_{self})_{t-1}]) = \lambda \in [0,1]\\
+  \gamma p_v(w_t) + (1 - \gamma)[\lambda p_c(w_t) + (1 - \lambda)p_q(w_t)] = p(w_t) \in \mathbb{R}^{l+m+v}
+\end{gather}
+
+需要说明的是，在训练的全时域中，我们采用的是单词级别的对数似然损失，如公式\ref{cnl2sqleq:decoder9}。
+
+\begin{equation}
+  \label{cnl2sqleq:decoder9}
+  \mathcal L = -\sum^T_t \log p(a_t)
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \section{实验与分析}
 \label{cnl2sql:syyfx}
