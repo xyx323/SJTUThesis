@@ -199,7 +199,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   FFN_C(C_{com} + C_{mha}) = C_{self} \in \mathbb{R}^{l \times d} \qquad FFN_Q(Q_{com} + Q_{mha}) = Q_{self} \in \mathbb{R}^{m \times d}
 \end{gather}
 
-\textbf{编码结束阶段}
+\textbf{最终编码阶段}
 
 最后，我们使用两个双向LSTM将所有信息进行汇总并将矩阵$C_{fin}$和$Q_{fin}$输入给解码器，如公式\ref{cnl2sqleq:encoder10}。
 \begin{equation}
@@ -301,43 +301,154 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \end{equation}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 \section{实验与分析}
 \label{cnl2sql:syyfx}
+\subsection{多任务网络的实验结果}
+
+\begin{table}[!htpb]
+  \bicaption[出现在表目录的标题]
+    {多任务网络的实验结果}
+    {A Table with footnotes}
+  \label{tab:drwwldsyjg}
+  \centering
+  \begin{threeparttable}[b]
+     \begin{tabular}{cccccccccc}
+      \toprule
+      \multirow{2}{18mm}{数据集}&\multicolumn{4}{c}{单任务} & \multicolumn{5}{c}{多任务}\\
+      \cmidrule(lr){2-5}\cmidrule(lr){6-10}
+      & S2S & w/SAtt & +CAtt & +QPtr & S2S & w/SAtt & +CAtt & +QPtr & +ACurr\\
+      \midrule
+      % 增强解析器（静态预言） & 87.1 & 88.2 & 65.9 & 67.5\\
+      % 增强解析器（非确定性预言, 不解决过滤条件顺序问题） & 88.1 & 89.2 & 68.3 & 69.1\\
+      SQuAD & 48.2 & 68.2 & 74.6 & 75.5 & 47.5 & 66.8 & 71.8 & 70.8 & 74.3\\
+      IWSLT & 25.0 & 23.3 & 26.0 & 25.5 & 14.2 & 13.6 & 9.0 & 16.1 & 13.7\\
+      CNN/DM & 19.0 & 20.0 & 25.1 & 24.0 & 25.7 & 14.0 & 15.7 & 23.9 & 24.6\\
+      MNLI & 67.5 & 68.5 & 34.7 & 72.8 & 60.9 & 69.0 & 70.4 & 70.5 & 69.2\\
+      SST & 86.4 & 86.8 & 86.2 & 88.1 & 85.9 & 84.7 & 86.5 & 86.2 & 86.4\\
+      QA-SRL & 63.5 & 67.8 & 74.8 & 75.2 & 68.7 & 75.1 & 76.1 & 75.8 & 77.6\\
+      QA-ZRE & 20.0 & 19.9 & 16.6 & 15.6 & 28.5 & 31.7 & 28.5 & 28.0 & 34.7\\
+      WOZ & 85.3 & 86.0 & 86.5 & 84.4 & 84.0 & 82.8 & 75.1 & 80.6 & 84.1\\
+      WikiSQL & 60.0 & 72.4 & 72.3 & 72.6 & 45.8 & 64.8 & 62.9 & 62.0 & 58.7\\
+      MWSC & 43.9 & 46.3 & 40.4 & 52.4 & 52.4 & 43.9 & 37.8 & 48.8 & 48.4\\
+      \midrule
+      总得分 & - & - & - & - & 473.6 & 546.4 & 533.8 & 562.7 & 571.7\\
+      \bottomrule
+    \end{tabular}
+  \end{threeparttable}
+\end{table}
+
+如图\ref{fig:cnl2sqlnet}以及\ref{fig:cnl2sqltcr}所示，我们的模型的训练样本为包含任务序列、内容序列以及结果序列的三元组。
+我们所做的对比实验的基准为使用了指针生成器的序列到序列的模型（简称S2S模型）[！！引用！！]。
+不一样的是，S2S模型的输入为自然语言问题序列，而多任务网络的输入为任务及内容序列的集合。
+
+实验结果如表\ref{cnl2sql:syyfx}所示，表中S2S代表序列到序列(sequence to sequence)模型，(w/SAtt)代表增加带自注意力机制的S2S模型，
+(+CAtt)代表将任务与内容序列拆分为两个输入序列并增加对偶协同注意力机制，(+QPtr)代表增加任务指针器， (+ACurr)代表增加反递进学习过程。
+总得分表示多任务学习时各个子任务得分的和，由于单任务不存在多任务的得分和所以标记为’-’。
+
+
+在表\ref{cnl2sql:syyfx}中的指标可以看出，S2S模型在SQuAD任务上的效果较差，在WikiSQL数据集上的得分比之前的序列到序列的基准方案要高，但是普遍都没有多任务网络（+QPtr）的效果优异。
+在S2S模型的基础上增加了带自注意力机制层（w/SAtt）的编码器和解码器之后[！！引用！！]，模型具备了整合来自任务和内容信息的能力。
+从表中可以看出，新的模型在SQuAD任务上提升了20 nF1，QA-SRL任务上提升了4 nF1，WikiSQL上提升了12 LFEM。
+模型在WikiSQL上的表现接近了最高水平的范围，在没有使用结构化的方法[！！引用！！]下达到了72.4\%。
+
+接着，我们尝试将任务和内容从输入中进行拆分并增加了对偶协同注意力机制（+CAtt）。
+可以看到，模型在SQuAD和QA-SRL上的性能提升了超过5 nF1，但是在其他任务上没有明显的提升，甚至在MNLI和MWSC任务上的性能有所降低。
+其原因是由于两个任务往往能够从输入中直接复制一些单词作为输出，S2S模型的输入为任务和内容信息的集合，所以其中的指针生成器可以直接完成从输入中复制信息到输出的操作。
+而将任务和内容信息拆分为两个输入序列的时候，模型就失去了这个能力。
+
+为了解决这个问题，我们在之前的模型上又增加了一个任务指针（+QPtr）进行实验。
+实验结果显示，任务指针有效的提高了模型在MNLI和MWSC上的性能。
+同时，模型在SQuAD任务上提升到了75.5 nF1，达到了SQuAD领域中使用直接跨度检测方法的水平，也就是说多任务网络达到了不明确将问题进行跨度检测的方法中的最高水平。
+
+最后的模型在WikiSQL任务上达到了72.4\%的lfEM以及80.4\%的数据库执行准确率，超过了之前的最高水平[！！引用！！]的71.7\%和78.5\%。
+
+在单任务与多任务的比较中，我们也得到了类似的结果以及注意到了一些额外的特点。
+多任务与单任务模型相比，在QA-ZRE任务上的F1得分又有11点提升，也验证了多任务的模型在解决零样本学习（zero-shot learning）上的能力。
+
+\subsection{不同优化策略下的实验结果}
+
+在多任务的训练过程中我们尝试了各种批量采样（batch-level sampling）的策略，包括联合训练、递进学习、反递进学习等，其实验结果如表\ref{tab:drwwlzbtxlclxdsyjg}所示。
+
+我们首先考虑的是完全联合（fully joint）的策略。
+从训练开始到结束，我们对所有的任务按照固定的顺序循环的进行批量采样。
+这种策略在迭代（iteration）次数较少的单任务下的表现良好，见表\ref{tab:drwwlzbtxlclxdsyjg}，但在迭代次数较多的单任务下性能不佳。
+经过总结我们发现，单任务与多任务场景下的性能的差异与单任务的迭代次数之间有很强的关联。
+
+由于上述原因，我们还尝试了一些反递进学习的策略[！！引用！！]。
+这些训练的策略都是由两阶段组成的：1）在第一阶段中对部分任务进行联合训练（往往选择较难的任务）。2）第二阶段根据完全联合策略进行对所有任务进行训练。
+
+首先，我们尝试了先将SQuAD任务进行单独训练，之后再对其他的所有任务进行完全联合训练。
+由于我们的多任务网络对于所有任务来说是一种基于问答的方法，所以我们联想到是否可以先与训练SQuAD这样的QA数据集然后再对其他的类QA的任务进行训练。
+这种方法可以使得解码器先学会如何从内容信息中检索出有用信息，然后学习不同的任务以及如何产生属于不同任务领域的单词。
+在SQuAD这个任务场景下进行预训练已经被证明可以提高NLI的性能[！！引用！！]。
+根据我们的实验来看，这种方式相对于其他的训练策略而言是一种更有效的训练策略，在总得分上获得了571.7的最高分。
+需要特别提到的是，这种策略在IWSLT任务上的得分较低，但是在其他的任务中会有更大的提升，特别是使用指针的任务。
+
+为了探索在递进学习策略的初始状态下增加额外的任务是否会进一步提高性能，我们还尝试了将IWSLT、CNN/DM任务和IWSLT、CNN/DM、MNLI任务加入到第一阶段进行训练。
+这些任务包含了与其他任务非常相关的训练样本，并且也包含了最长的结果序列。
+除此之外，这些任务具有很高的多样性，应该能够让解码器学会更多的解码方式，例如针对IWSLT的词汇表、针对SQuAD与CNN/DM的内容指针以及针对MNLI的任务指针。
+然而，实验结果表明这些新增的任务并没有提升模型的性能。
+在将SQuAD, IWSLT, CNN/DM和MNLI加入到递进学习的初始状态下时，其他的一些任务（例如QA-SRL, WikiSQL和MWSC）的性能明显下降。
+
+另外，我们也尝试了在递进学习策略的初始状态下使用了SST, QA-SRL, QA-ZRE, WOZ, WikiSQL和MWSC，这也就意味着先选择一些最简单的任务并进行训练。
+实验证明，这个策略是一个非常低劣的策略，不仅在初始递进学习中的任务的性能很差，在SQuAD和IWSLT上的表现更差。
+
+事实证明，对于我们的任务而言，使用反递进学习策略的效果优于递进学习策略，也就是说明了先学习简易的任务未能使模型学到能应用于其他任务的表示，甚至使得模型想要学习到其他任务有用的内部表示变得更加地困难。
+除此之外，实验的结果也说明了多任务学习的挑战。
+通过改变所学习的任务的先后次序可能可以提高某些任务性能，但也很有可能使其他的任务的性能下降。
+这也是多任务学习中一个非常值得研究的任务。
+
+
+\begin{table}[!htpb]
+  \bicaption[出现在表目录的标题]
+    {多任务网络在不同训练策略下的实验结果}
+    {A Table with footnotes}
+  \label{tab:drwwlzbtxlclxdsyjg}
+  \centering
+  \begin{threeparttable}[b]
+     \begin{tabular}{cccccc}
+      \toprule
+      \multirow{2}{18mm}{数据集}&\multirow{2}{18mm}{完全联合}&\multirow{2}{18mm}{递进} & \multicolumn{3}{c}{反递进}\\
+      \cmidrule(lr){4-6}
+      % & S2S & w/SAtt & +CAtt & +QPtr & S2S & w/SAtt & +CAtt & +QPtr & +ACurr\\
+      & & & SQuAD & +IWSLT+CNN/DM & +MNLI\\
+      \midrule
+      SQuAD & 70.8 & 43.4 & 74.3 & 74.5 & 74.6\\
+      IWSLT & 16.1 & 4.3 & 13.7 & 18.7 & 19.0\\
+      CNN/DM & 23.9 & 21.3 & 24.6 & 20.8 & 21.6\\
+      MNLI & 70.5 & 58.9 & 69.2 & 69.6 & 72.7\\
+      SST & 86.2 & 84.5 & 86.4 & 83.6 & 86.8\\
+      QA-SRL & 75.8 & 70.6 & 77.6 & 77.5 & 75.1\\
+      QA-ZRE & 28.0 & 24.6 & 34.7 & 30.1 & 37.7\\
+      WOZ & 80.6 & 81.9 & 84.1 & 81.7 & 85.6\\
+      WikiSQL & 62.0 & 68.6 & 58.7 & 54.8 & 42.6\\
+      MWSC & 48.8 & 41.5 & 48.4 & 34.9 & 41.5\\
+      \midrule
+      % 总得分 & - & - & - & - & 473.6 & 546.4 & 533.8 & 562.7 & 571.7\\
+      总得分 & 562.7 & 499.6 & 571.7 & 546.2 & 557.2\\
+      \bottomrule
+    \end{tabular}
+  \end{threeparttable}
+\end{table}
+
+\subsection{实验分析}
+
+\textbf{多指针生成器与任务识别}
+多任务网络会从三个方面进行选择：从词汇表生成词汇、任务序列上的指针以及内容序列上的指针。
+尽管模型没有明确的监督信号来训练这些选择，但网络仍可以学会如何在这三个选择之间进行切换。
+图xx显示了我们最好的模型选择每个选项的频率是怎样的。
+可以看出，对于SQuAD，QA-SRL和WikiSQL任务，模型主要是从内容信息中进行选择和复制，这正是因为这些任务中的正确结果主要攘括在内容中。
+由于答案的摘要主要由内容中的单词组成，模型在CNN/DM任务中也是主要从内容中进行复制。
+对于SST，MNLI和MWSC，由于任务序列中会包含需要的类别，所以模型也偏向选择任务指针。
+对于IWSLT和WOZ，模型更喜欢选择从词汇表生成单词，因为中文的单词和对话的状态字段很少在对应的内容信息中。
+
+同时，使用了TCR模板之后的所有任务之间不会使得模型产生混淆。例如：中文单词仅仅会在中文翻译成英文的过程中出现，而在情感分析任务中也从未输出过非“正面”或“负面”的情感类别。
+
+\textbf{模型的拓展性}
+多任务网络具有很好的拓展性，除了中文翻译为英文任务和英文生成SQL自然语言任务外对图\ref{cnl2sql:syyfx}中的其他任务都有很好的表现。
+在这十个任务共同学习的模型的基础上进行其他任务的学习更加表现了模型良好的拓展性。
+对于两个新的任务，英文到捷克语的翻译任务以及命名实体识别（NER）上，使用训练好的模型进行微调可以在更少的迭代次数下达到模型的收敛，达到很好的效果，如图xx。
+其中，英文到捷克语的翻译任务使用的是En->Cs数据集，NER任务使用的是OntoNotes 5.0数据集[！！引用！！]。
+\textbf{文本分类的零样本学习}
+
 \section{本章小结}
-Machine  ComprehensionQuestion answering (QA) mod-els receive a question and a context that contains informationnecessary  to  output  the  desired  answer.  We  use  the  StanfordQuestion  Answering  Dataset  (SQuAD)  []  for  this  task.  Con-texts  are  paragraphs  taken  from  the  English  Wikipedia,  andanswers  are  sequences  of  words  copied  from  the  context.SQuAD  uses  a  normalized  F1  (nF1)  metric  that  strip  outarticles and punctuation.Machine Translation.Machine translation models receivean  input  document  in  a  source  language  that  must  be  trans-lated  into  a  target  language.  We  use  the  2016  English  to
-
-German training data prepared for the International Workshopon  Spoken  Language  Translation  (IWSLT)  [].  Examples  arefrom transcribed TED presentations that cover a wide varietyof  topics  with  conversational  language.  We  evaluate  with  acorpus-level BLEU score [] on the 2013 and 2014 test sets asvalidation and test sets, respectively.Natural  Language  Inference.Natural  Language  Infer-ence  (NLI)  models  receive  two  input  sentences:  a  premiseand  a  hypothesis.  Models  must  then  classify  the  inferencerelationship between the two as one of entailment, neutrality,or  contradiction.  We  use  the  Multi-Genre  Natural  LanguageInference Corpus (MNLI) [] which provides training examplesfrom  multiple  domains  (transcribed  speech,  popular  fiction,government  reports)  and  test  pairs  from  seen  and  unseen
-
-domains.  MNLI  uses  an  exact  match  (EM)  score.  SentimentAnalysis.  Sentiment  analysis  models  are  trained  to  classifythe  sentiment  expressed  by  input  text.  The  Stanford  Senti-ment  Treebank  (SST)  []  consists  of  movie  reviews  with  thecorresponding  sentiment  (positive,  neutral,  negative).  We  usethe unparsed, binary version []. SST also uses an EM score.Semantic  Parsing.SQL  query  generation  is  related  tosemantic  parsing.  Models  based  on  the  WikiSQL  dataset[]  translate  natural  language  questions  into  structured  SQLqueries  so  that  users  can  interact  with  a  database  in  naturallanguage. WikiSQL is evaluated by a logical form exact match(lfEM)  to  ensure  that  models  do  not  obtain  correct  answersfrom incorrectly generated queries.Summarization.Summarization models take in a documentand  output  a  summary  of  that  document.  Most  important  torecent  progress  in  summarization  was  the  transformation  ofthe CNN/DailyMail (CNN/DM) corpus [Hermann et al., 2015]into  a  summarization  dataset  [Nallapati  et  al.,  2016].  We  in-clude the non-anonymized version of this dataset in decaNLP.On  average,  these  examples  contain  the  longest  documentsin decaNLP and force models to balance extracting from thecontext  with  generation  of  novel,  abstractive  sequences  ofwords.  CNN/DM  uses  ROUGE-1,  ROUGE-2,  and  ROUGE-L  scores  [Lin,  2004].  We  average  these  three  measures  tocompute an overall ROUGE score.Sentiment Analysis.Sentiment analysis models are trainedto classify the sentiment expressed by input text. The StanfordSentiment  Treebank  (SST)  [Socher  et  al.,  2013]  consists  ofmovie  reviews  with  the  corresponding  sentiment  (positive,neutral, negative). We use the unparsed, binary version [Rad-ford et al., 2017]. SST also uses an EM score.Semantic  Role  Labeling.Semantic  role  labeling  (SRL)models  are  given  a  sentence  and  predicate  (typically  a  verb)and must determine who did what to whom, when, and where[Johansson  and  Nugues,  2008].  We  use  an  SRL  dataset  thattreats  the  task  as  question  answering,  QA-SRL  [He  et  al.,2015]. This dataset covers both news and Wikipedia domains,but  we  only  use  the  latter  in  order  to  ensure  that  all  datafor decaNLP can be freely downloaded. We evaluate QA-SRLwith the nF1 metric used for SQuAD.Relation Extraction.Relation extraction systems take in apiece  of  unstructured  text  and  the  kind  of  relation  that  is  tobe extracted from that text. In this setting, it is important thatmodels can report that the relation is not present and cannot beextracted. As with SRL, we use a dataset that maps relations toa set of questions so that relation extraction can be treated asquestion answering: QA-ZRE [Levy et al., 2017]. Evaluationof  the  dataset  is  designed  to  measure  zero  shot  performanceon new kinds of relations   the dataset is split so that relationsseen  at  test  time  are  unseen  at  train  time.  This  kind  of  zero-shot relation extraction, framed as question answering, makesit  possible  to  generalize  to  new  relations.  QA-ZRE  uses  acorpus-level  F1  metric  (cF1)  in  order  to  accurately  accountfor unanswerable  questions. This F1  metric  defines precisionas  the  true  positive  count  divided  by  the  number  of  timesthe  system  returned  a  non-null  answer  and  recall  as  the  true
-
-positive  count  divided  by  the  number  of  instances  that  havean answer.Goal-Oriented   Dialogue.Goal-Oriented  Dialogue.  Dia-logue  state  tracking  is  a  key  component  of  goal-orienteddialogue  systems.  Based  on  user  utterances,  actions  takenalready, and conversation history, dialogue state trackers keeptrack of which predefined goals the user has for the dialoguesystem  and  which  kinds  of  requests  the  user  makes  as  thesystem  and  user  interact  turn-by-turn.  We  use  the  EnglishWizard of Oz (WOZ) restaurant reservation task [Wen et al.,2016],  which  comes  with  a  predefined  ontology  of  foods,dates, times, addresses, and other information that would helpan agent make a reservation for a customer. WOZ is evaluatedby turn-based dialogue state EM (dsEM) over the goals of thecustomers.Semantic   Parsing.SQL  query  generation  is  related  tosemantic  parsing.  Models  based  on  the  WikiSQL  dataset[Zhong et al., 2017] translate natural language questions intostructured  SQL  queries  so  that  users  can  interact  with  adatabase  in  natural  language.  WikiSQL  is  evaluated  by  alogical  form  exact  match  (lfEM)  to  ensure  that  models  donot obtain correct answers from incorrectly generated queries.Pronoun  Resolution.Our final task is based on Winogradschemas  [Winograd,  1972],  which  require  pronoun  resolu-tion:  ”Joan  made  sure  to  thank  Susan  for  the  help  she  had[given/received].  Who  had  [given/received]  help?  Susan  orJoan?”.  We  started  with  examples  taken  from  the  WinogradSchema Challenge [Levesque et al., 2011] and modified themto  ensure  that  answers  were  a  single  word  from  the  context.This modified Winograd Schema Challenge (MWSC) ensuresthat  scores  are  neither  inflated  nor  deflated  by  oddities  inphrasing  or  inconsistencies  between  context,  question,  andanswer. We evaluate with an EM score.The  Decathlon  Score  (decaScore).Models  competing  ondecaNLP are evaluated using an additive combination of eachtask-specific metric. All metrics fall between 0 and 100, so thatthe decaScore naturally falls between 0 and 1000 for ten tasks.Using  an  additive  combination  avoids  issues  that  arise  fromweighing different metrics. All metrics are case insensitive.As shown in Table II. All metrics are case insensitive. nF1is  the  normalized  F1  metric  used  by  SQuAD  that  strips  outarticles  and  punctuation.  EM  is  an  exact  match  comparison:for  text  classification,  this  amounts  to  accuracy;  for  WOZ  itis equivalent to turn-based dialogue state exact match (dsEM)and  for  WikiSQL  it  is  equivalent  to  exact  match  of  logicalforms (lfEM). F1 for QA-ZRE is a corpus level metric (cF1)that  takes  into  account  that  some  question  are  unanswerable.Precision is the true positive count divided by the number oftimes the system returned a non-null answer. Recall is the truepositive  count  divided  by  the  number  of  instances  that  havean answer.
-
-Because  every  task  is  framed  as  question  answering  andtrained jointly, we call our model a multitask question answer-
-
-ing  network  (MQAN).  Each  example  consists  of  a  context,question,  and  answer  as  shown  in  Fig.  1.  Many  recent  QAmodels  for  question  answering  typically  assume  the  answercan  be  copied  from  the  context  [Wang  and  Jiang,  2017,  Seoet  al.,  2017,  Xiong  et  al.,  2018],  but  this  assumption  doesnot  hold  for  general  question  answering.  The  question  oftencontains  key  information  that  constrains  the  answer  space.Noting this, we extend the coattention of [Xiong et al., 2017]to enrich the representation of not only the input but also thequestion.  Also,  the  pointer-mechanism  of  [See  et  al.,  2017]is generalized into a hierarchical, multi-pointer-generator thatenables  the  capacity  to  copy  directly  from  the  question  andthe context.During training, the MQAN takes as input three sequences:a  context  c  with  l  tokens,  a  question  q  with  m  tokens,  andan answer a with n tokens. Each of these is represented by amatrix where the ith row of the matrix corresponds to a demb-dimensional embedding (such as word or character vectors) forthe ith token in the sequence:
-
-Encoder:
-xxxxx
-Decoder:
-xxxxx
