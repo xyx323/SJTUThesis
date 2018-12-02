@@ -42,8 +42,87 @@ $c$代表数据库表的模式“Name Location Height(ft) Floor Year”，其中
 即在知道数据库表模式$c$的状态下，将用户输入的自然语言问题$w$最终转换为一条SQL查询语句$y$并得到数据库执行结果$r$。
 
 \section{相关技术}
-\subsection{迁移学习与多任务学习}
-\subsection{元学习}
+\subsection{注意力转换器模型}
+
+2017年谷歌提出了注意力转换器模型（Transformer）[！！引用！！]，其在翻译任务上的表现十分优异。
+在该模型中，最重要的机制为多头自注意力机制（multi-head self-attention）和位置编码机制（Positional Encoding）。
+
+\textbf{多头自注意力机制（multi-head self-attention）}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=7cm]{example/SDPA.png}
+  \includegraphics[width=7cm]{example/MHA.png}
+  \bicaption[这里将出现在插图索引中]
+    {缩放点积注意力（scaled dot-product attention）和多头注意力（multi-head attention）}
+    {English caption}
+  \label{fig:SDPAMHA}
+\end{figure}
+
+多头自注意力机制包含缩放点积注意力（scaled dot-product attention）和多头注意力多头注意力（multi-head attention）两部分，如图\ref{fig:SDPAMHA}所示）。
+在缩放点积注意力中，输入由query（Q），$d_k$维的key（K）以及$d_v$维的value（V）组成，需要将query和一些列的（key，value）对映射起来，如公式\ref{cnl2sqleq:mhsaeq1}。
+实际上，注意力机制就是一个由诸多Query和（key，value）组成的映射函数。
+
+\begin{equation}
+  \label{cnl2sqleq:mhsaeq1}
+  q -> [(k_1,v_1),(k_2,v_2),...] -> attention = w_1 * v_1 + w_2 +v_2 + ... 
+\end{equation}
+
+query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，得到value对应的权重$w$，如公式\ref{cnl2sqleq:mhsaeq2}。
+
+\begin{equation}
+  \label{cnl2sqleq:mhsaeq2}
+  Attention(Q,K,V) = softmax(\frac{QK^T}{\sqrt{d_k}})V  
+\end{equation}
+
+而多头注意力实际上就是将query和key做多次的线性映射，最后将结果串联在一起。
+在编码器和解码器结构中，query来自于上一层的解码器中，而key和value来自上一层的编码器中。
+多头注意力就是将句子中的每一个部分都参与到编码和解码的过程中，允许模型关注来自不同位置及不同表示的信息，如公式\ref{cnl2sqleq:mhsaeq3}。
+
+\begin{equation}
+  \label{cnl2sqleq:mhsaeq3}
+  MultiHead(Q,K,V) = Concat(head_1,...,head_h) \quad \mbox{其中} head_i = Attention(QW^Q_i,KW^K_i,VW^V_i)
+\end{equation}
+
+\textbf{位置编码机制（Positional Encoding）}
+
+鉴于注意力转换器模型并没有CNN或RNN的结构，为了引入序列的位置信息，还需要加入位置编码机制。
+在编码器和解码器的嵌入之后的向量与$d_{model}$维的位置编码进行求和。
+位置编码的方式有很多种，可以是学习得到的也可以是固定的，可以对不同序列使用$sin$和$cos$函数进行计算，如公式\ref{cnl2sqleq:mhsaeq4}。
+
+\begin{gather}
+  \label{cnl2sqleq:mhsaeq4}
+  PE_{(pos,2i)} = sin(\frac{pos}{10000^{\frac{2i}{d_{model}}}})\\
+  PE_{(pos,2i+1)} = cos(\frac{pos}{10000^{\frac{2i}{d_{model}}}}) 
+\end{gather}
+
+\subsection{NLP领域的迁移学习}
+
+在自然语言处理（NLP）领域中有很多重要成果都与迁移学习有关。
+例如Word2Vec[！！引用！！]，skip-thought Vec[！！引用！！]和Glove[！！引用！！]都是先产生预训练好的词向量，再把这些知识“迁移”到其他应用上。
+嵌入（embedding）[！！引用！！]、中间表示（intermediate representation）[！！引用！！]和语言模型中的权重[！！引用！！]都可以被迁移到其他类似的架构[！！引用！！]甚至分类任务[！！引用！！]上。
+从机器翻译模型上得到的中间表示可以迁移并提升处理问答、情感分析等任务的模型[！！引用！！]。
+使用问答数据集训练的模型与使用推理数据集训练的模型可以完成对方的任务[！！引用！！]。
+高质量机器翻译模型与低质量机器翻译模型之间也相互支持[！！引用！！]。
+这些研究表明，想要同时学习中文自然语言查询转换英文自然语言查询和英文自然语言查询生成SQL查询语句两个任务是可以迁移的。
+
+\subsection{NLP领域的多任务学习}
+
+2011年，Collobert[！！引用！！]首先提出了可以同时处理多个自然语言问题的解决方案，处理的问题包括分块（chunk）、命名实体识别（NER）、词性标注（POS）、语义角色标注（SRE）等。
+之后Hashimoto[！！引用！！]也提出了可以同时处理依赖解析、语义相关和自然语言推理任务的网络结构。
+使用跨语种的预料进行机器翻译模型训练时发现，采用多任务学习的方法[！！引用！！]甚至可以一定程度解决零样本的问题。
+基于序列到序列的模型采用不同数量的编码器和解码器时[！！引用！！]甚至可以同时学习翻译、解析和图像字幕生成的任务。
+甚至学习图像分类和语音识别任务的模型可以被模块化[！！引用！！]之后拓展到图像到文字的问答任务上[！！引用！！]。
+采用[！！引用！！]的方法还可以减轻任务之间存在的干扰。
+
+事实上，1997年Caruana[！！引用！！]就证明多任务学习是有效的，因为模型能够利用任务之间的关联性。
+当同时学习的任务十分相关时，学习不同的任务可以提供归纳偏差[！！引用！！]，强迫模型去学习那些更通用和普遍的表示方法。
+通过将许多单独的任务同时学习并比较，可以充分验证多任务学习的有效性[！！引用！！]。
+
+显然，本文使用TCR模板将子任务转换为统一形式后，采用多任务学习的学习策略可以有效地提升模型的性能。
+
+% \subsection{NLP领域的元学习}
+
 
 \section{解决方案}
 

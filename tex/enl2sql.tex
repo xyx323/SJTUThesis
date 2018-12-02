@@ -74,22 +74,315 @@ $c$代表数据库表的模式“Name Location Height(ft) Floor Year”，其中
 
   
 
-\section{相关技术}
-\subsection{NL2SQL研究现状}
-\subsection{深度学习}
+\section{研究现状与相关技术}
+\subsection{研究现状}
+
+NL2SQL（Nature Language To SQL Statement）任务可以看作是一种语义解析的任务。
+在以前，大多数的研究者提出的语义解析器都依赖弱监督信号，即以SQL查询语句在数据库中的执行结果来构造训练数据，如[！！引用！！]。
+他们希望能通过训练解析器来生成出SQL语句的基本逻辑形式。
+然而，由于SQL语句的逻辑形式往往由人工定义，构造出的训练数据集往往非常小。
+同时歧义问题（不同逻辑形式的语句可能产生相同的执行结果，并且无法区分哪种形式是正确结果并作为监督信号）使得设计出来的解析器的性能非常有限。
+在2017年，[！！引用！！]的作者发布了一个由带注释的自然语言查询、SQL查询语句和对应的数据库模式构成的大型数据集WikiSQL。
+尽管与之前的SQL生成领域的ATIS和GeoQuery数据集相比，WikiSQL数据集覆盖的SQL语法较少，但是它的优势在于数据集很大并且在自然语言问题的表示和数据库模式和内容上有着非常高的多样性。
+这也意味着神经网络和深度学习技术可以更好地应用在NL2SQL这个领域上。
+
+近几年来，已经有大量的研究者在NL2SQL这个领域进行研究并在WikiSQL数据集上进行实验与验证，其中包括[！！！！引用！！！！！]等。
+目前主要的研究思路有两种，一种是用基于序列到序列的神经“机器翻译”系统[！！引用！！]，另一种是将SQL查询划分为多个部分并使用不同的模块进行生成[！！引用！！]。
+第一种方案的挑战在于可能会有多种语义一致的逻辑形式对应于同一个查询结果。
+例如[！！引用！！]中所提到的，由不分先后顺序的过滤条件构成的SQL语句的执行结果却是一致的，而序列到序列的模型往往需要一种标准格式才能训练。
+为了解决这个问题，作者使用了强化学习来对解析器的所有正确预测进行奖励。
+第二种方案不使用序列到序列模型，而是使用序列到集合的模型先去预测数据表中的哪些列名应该出现在最后的SQL语句中，再在这些列名的基础上分别预测剩余的部分。
+这种方法可以有效避免过滤条件的顺序问题，但是也会使得模型丢失很多输入序列的内部依赖信息。
+本文总结分析了两种研究思路的优劣，提出了一种新的基于序列到动作的解析器模型。
+
+\subsection{深度学习系统}
+
+% \textbf{深度学习简介}
+
+从网络搜索到社交网络的内容分发，从新闻推荐到电商网站的“猜你喜欢”，机器学习技术已经被广泛应用于我们生活的方方面面，它正在不断地改变和重塑着人类的社会生活。
+随着数据的不断涌现，算法的不断改进以及计算能力的不断提升，诸如图片中的目标识别、语音到文字的转换等极具挑战的问题也正在一项项被攻破。
+其中最为前卫和火热的技术就是深度学习技术。
+
+深度学习是机器学习的部分内容，其主要为更抽象和高级的数据进行建模和表达。
+它具有更强大的能力和灵活性，可以将大千世界表示为嵌套的层次概念体系。
+越来越多的智能系统正在从基于规则的系统逐步转向深度学习系统上，如图\ref{fig:DLS}。
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=10cm]{example/DLS.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {智能系统的演变}
+    {English caption}
+  \label{fig:DLS}
+\end{figure}
+
+接下来，本文将对深度学习的一些基本概念和方法进行介绍，
+包括神经网络、反向传播机制、循环神经网络（RNN）、长短期记忆网络（LSTM）、双向循环神经网络（Bi-RNN）和注意力机制（Attention）。
+
+\subsection{神经网络}
+% \textbf{神经网络}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=10cm]{example/BNN.pdf}
+  \includegraphics[width=10cm]{example/NNMM.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {生物神经元及其数学抽象}
+    {English caption}
+  \label{fig:BNNandNNMM}
+\end{figure}
+
+神经网络（Neural Network）是深度学习的基础，它是一种计算模型，其灵感来源于人脑的生物神经网络处理信息的方式，如图\ref{fig:BNNandNNMM}上。
+我们知道大脑的基本计算单元是神经元，人类的神经系统中大约有860亿个神经元以及与之相连的$10^{10}$至$10^{15}$个突触。
+计算机科学家将神经元的工作原理抽象成为数学的表达形式，如图\ref{fig:BNNandNNMM}下。
+
+% \begin{figure}[!htp]
+%   \centering
+%   \includegraphics[width=8cm]{example/NNMM.pdf}
+%   \bicaption[这里将出现在插图索引中]
+%     {神经元的数学抽象}
+%     {English caption}
+%   \label{fig:NNMM}
+% \end{figure}
+
+简单来说，神经网络中的基本计算单元是神经元（Cell），也被叫做节点（Node）或单元（Unit）。
+它接收来自其他的节点或者外部数据源的输入，经过计算之后得到输出。
+每个输入$x_i$都会有一个对应的权重$w_i$，通过$\sum_i w_ix_i$计算加权和之后再加上一个偏置$b$(bias)。
+最后通过激活函数$f$得到输出$f(\sum_i w_ix_i +b)$。
+
+其中，激活函数$f$是非线性函数，通过引入非线性的激活函数来模拟当细胞接受到的信号总和超过某个阈值时产生激活。
+我们常常会使用三种激活函数，分别为$softmax$、$tanh$和$ReLU$，如公式\ref{enl2sql:afeq}和图\ref{fig:af}(图中从左到右分别为$softmax$、$tanh$和$ReLU$函数)所示。
+
+\begin{gather}
+  \label{enl2sql:afeq}
+  sigmoid(x) = \frac{1}{1 + e^{-x}}\\
+  tanh(x) = \frac{2}{1 + e^{-2x}} - 1\\
+  ReLU(x) = \max(0,x)
+\end{gather}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=14cm]{example/af.png}
+  \bicaption[这里将出现在插图索引中]
+    {激活函数}
+    {English caption}
+  \label{fig:af}
+\end{figure}
+
+为了处理更大的数据量，我们一般将许多的神经元组合在一起并分为不同的层（layer），从而构成神经网络的基础架构，如图\ref{fig:NNA}所示。
+其中主要包含三种层:
+
+\begin{itemize}
+  \item 输入层（input layer）：输入层接收由外部输入的数据并传递给下一层，不进行任何的计算。
+  \item 隐藏层（hidden layer）：隐藏层进行数据处理和计算，将计算结果传递给下一层。在网络中可以存在多个隐藏层，其节点个数也可能不一致。
+  \item 输出层（output layer）：输出层往往会将结果映射到所需的输出格式上，例如采用$softmax$函数进行多分类。
+\end{itemize}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=13cm]{example/NNA.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {神经网络的基础架构}
+    {English caption}
+  \label{fig:NNA}
+\end{figure}
+
+\subsection{反向传播机制}
+% \textbf{反向传播机制}
+
+反向传播（Backward Propagation）机制[！！引用！！]是训练神经网络的几种方式之一，使用它可以利用训练数据来进行监督学习。
+简单来说，反向传播就是“从错误中学习”，每当计算结果与正确结果不一致时，反向传播机制可以有效地纠正神经网络。
+从图\ref{fig:BP}可以看出，首先经过前向传播得到模型的输出与正确结果之间的总误差$E_{total}$，然后使用链式法则将误差向后传播并得到所有向量和权重的更新梯度。
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=10cm]{example/BP.png}
+  \bicaption[这里将出现在插图索引中]
+    {反向传播机制}
+    {English caption}
+  \label{fig:BP}
+\end{figure}
+
+\subsection{循环神经网络（RNN）}
+% \textbf{循环神经网络（RNN）}
+
+深度学习领域有两个非常经典和实用的网络，一个是卷积神经网络（CNN），另一个则是循环神经网络（RNN）[！！引用！！]。
+与CNN不同的是，RNN是一种序列模型，例如把一个英文自然语言句子作为输入时，RNN会按照单词在句子中的顺序单独输入给网络，每次的输出都取决于之前网络计算的结果。
+经典的循环神经网络如图\ref{fig:RNN}所示。
+其中：
+\begin{itemize}
+  \item $x_t$代表$t$时刻的输入。例如，$x_0$表示输入句子中第一个单词的One-hot编码向量。
+  \item $s_t$代表$t$时刻隐藏层的状态，是网络的“记忆”。$s_t$通过上一时刻的隐藏状态和当前时刻的输入经过$s_t = f(Ux_t + Ws_{t-1})$计算得到。其中$f$为激活函数，$s_{-1}$初始化为零。
+  \item $o_t$代表$t$时刻的输出。例如，我们想要预测出句子中下一个单词是什么，则$o_t$就是一个概率向量$o_t = softmax(Vs_t)$来表示词汇表中每个单词出现的概率。
+\end{itemize}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=11cm]{example/RNN.jpg}
+  \bicaption[这里将出现在插图索引中]
+    {循环神经网络}
+    {English caption}
+  \label{fig:RNN}
+\end{figure}
+
+\subsection{长短期记忆网络（LSTM）}
+% \textbf{长短期记忆网络（LSTM）}
+
+经典的循环神经网络有一个明显的缺点，就是当时刻变得很长时，网络无法利用到很早之前的上下文信息。
+为了解决这个问题，Hochreiter和Schmidhuber发明了一种能够进行长期“记忆”的网络，长短期记忆网络（LSTM）[！！引用！！]。
+如图\ref{fig:LSTM}所示（黄色矩形表示神经网络层；粉色圆形表示运算操作，如加、减、乘、除；黑色单箭头表示向量的传输；合成箭头表示向量的连接；分箭头表示向量的复制），LSTM的结构与RNN保持一致，只是在隐藏层内部做了很多的“记忆”操作，包括：
+
+\begin{itemize}
+   \item 遗忘门（forget gate），目的为从细胞状态中丢弃信息，表示为$f_t$。
+   \item 更新门（update gate），目的为让新的信息加入到细胞状态中，表示为$i_t$、$\widetilde{C}_t$和$C_t$。
+   \item 输出门（output gate），目的为确定输出的值，表示为$o_t$和$h_t$。
+\end{itemize}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=13cm]{example/LSTM.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {长短期记忆网络（LSTM）}
+    {English caption}
+  \label{fig:LSTM}
+\end{figure}
+
+\subsection{双向循环神经网络}
+% \textbf{双向循环神经网络}
+
+包括RNN、LSTM、GRU在内的很多网络都有一个共同的缺陷就是网络只会对之前时刻的信息进行学习。
+而实际上，在很多场景下我们需要从未来时刻的信息中学习。
+双向循环神经网络（Bi-RNN）及其变种的出现就是为了解决这个问题。
+
+Bi-RNN的结构如图\ref{fig:BiRNN}所示，其中的重复模块可以是经典的RNN、LSTM或GRU。
+网络可以分为两个部分的连接，先是从前向后执行学习到以前的信息，再由后向前在未来的表示中学习。
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=11cm]{example/BiRNN.png}
+  \bicaption[这里将出现在插图索引中]
+    {双向循环神经网络（Bi-RNN）}
+    {English caption}
+  \label{fig:BiRNN}
+\end{figure}
+
+\subsection{注意力机制（Attention）}
+% \textbf{注意力机制（Attention）}
+
+传统的序列到序列的网络结构将原句子编码为固定长度的向量再输入给解码器，这将导致大量的信息丢失。
+为了解决这个问题，谷歌提出了名为注意力机制（Attention）的解决方案。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=5cm]{example/attention1.jpg}
+  \includegraphics[width=7cm]{example/attention2.png}
+  % \subfigure[注意力机制1]{
+  %   \includegraphics[width=5.5cm]{BiRNN.png}
+  %   %\caption{fig1}
+  % }
+  % \quad
+  % \subfigure[注意力机制2]{
+  %   \includegraphics[width=5.5cm]{BiRNN.png}
+  %   %\caption{fig1}
+  % }
+  % \subfigure[注意力机制1] %第一张子图
+  % {
+  %   \begin{minipage}{7cm}
+  %   \centering          %子图居中
+  %   \includegraphics[scale=0.1]{BiRNN.png}   %以pic.jpg的0.5倍大小输出
+  %   \end{minipage}
+  % } 
+  % \subfigure[注意力机制2] %第二张子图
+  % {
+  %   \begin{minipage}{7cm}
+  %   \centering      %子图居中
+  %   \includegraphics[scale=0.1]{BiRNN.png}   %以pic.jpg的0.5倍大小输出
+  %   \end{minipage}
+  \bicaption[这里将出现在插图索引中]
+    {注意力机制原理及可视化}
+    {English caption}
+\label{fig:attention}
+\end{figure}
+
+图\ref{fig:attention}中左侧为注意力机制原理。
+其中，$y$表示在翻译过程中解码器生成的单词，$x$表示输入的原句子。
+每个解码器输出的$y_t$现在不单是取决于网络上一时刻的状态，而是取决于它和输入的加权组合。
+$a$为权重，表示输出时应当考虑多少输入状态。
+例如，若$a_{3,2}$是一个很大的数字，表示网络认为输出的第三个单词与输入的第二个单词的关联度很高。
+图\ref{fig:attention}中右侧为注意力机制的可视化展示，使得我们能够解释模型的一些内部原理。
+例如，将法语翻译为英语时网络将“la Syrie”翻译为“Syria”，可视化结果表明模型在此刻将两个单词关联到一个单词上而不是一一对应。
+
+
+% \subsection{强化学习}
 \subsection{强化学习}
-\subsection{语义解析}
+% \textbf{强化学习}
+
+机器学习可以分为三种学习类型，分别为非监督学习、监督学习和强化学习。
+强化学习是主要依靠智能体在环境（environment）中不断地试错并采取一系列的行为（action）从而累积得到最大的奖励（reward）的过程，
+其范式（如图\ref{fig:RL}所示）类似于人类学习知识的过程。
+一般来说，强化学习由智能体和环境两个部件组成，主要有以下四个要素：状态（state）、动作（action）、智能体（agent）和奖励（reward）。
+以小孩学习走路为例，小孩是智能体，他通过采取动作（即行走）来操纵环境（行走的表面），并且从一个状态转变到另一个状态（即他走的每一步），当他完成任务的子任务（即走了几步）时，孩子得到奖励（给巧克力吃），并且当他不能走路时，就不会给巧克力。
+
+从算法的角度，强化学习可以分为三类：
+\begin{itemize}
+  \item 基于策略（Policy based）的强化学习。其目标为找到最优的策略。
+  \item 基于价值（Value based）的强化学习。其目标为奖励综合的最大化。
+  \item 基于动作（Action based）的强化学习。其目标为最优动作的执行。
+\end{itemize}
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=11cm]{example/RL.jpg}
+  \bicaption[这里将出现在插图索引中]
+    {强化学习范式}
+    {English caption}
+  \label{fig:RL}
+\end{figure}
+
+% \textbf{深度强化学习}
+
+
+
+
+% \subsection{语义解析}
+
 \section{解决方案}
+
+介绍完本章的研究问题、研究现状和相关技术之后，我们将在本节中给出基于深度强化学习的NL2SQL生成的解决方案。
+
+\subsection{技术方案}
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=15cm]{example/nl2sqlapproach.pdf}
+  \bicaption[这里将出现在插图索引中]
+    {基于深度强化学习的NL2SQL生成的技术方案}
+    {English caption}
+  \label{fig:nl2sqlapproach}
+\end{figure}
+
+基于深度强化学习的NL2SQL生成的技术方案如图\ref{fig:nl2sqlapproach}所示，包含离线训练和在线生成两部分。
+
+在离线训练中，我们从WikiSQL数据集中获取自然语言查询语句及其对应的数据库模式数据并进行序列的向量编码表示（Embedding），
+基于深度强化学习的NL2SQL生成网络使用这些序列表示作为输入并输出一条SQL查询语句，
+将该语句导入数据库进行执行后得到执行结果并交由奖励函数进行计算，得到奖励后对原网络进行强化。
+需要说明的是，在后文中，我们把基于深度强化学习的NL2SQL生成网络命名为增强解析器，它由编码器（Encoder）和解码器（Decoder）组成，是基于时间序列的模型。
+
+在在线生成中，用户可以输入自然语言查询语句以及其对应的数据库模式，系统将对输入序列进行向量编码表示，
+基于深度强化学习的NL2SQL生成网络将生成并返回给用户一条SQL查询语句。
+
+接下来，本文将对技术方案中最重要的增强解析器模型（即基于深度强化学习的NL2SQL生成网络）进行介绍。
 
 \subsection{增强解析器模型}
 \label{enl2sql:zqjxqmx}
-针对每个输入$x$来生成结构化的输出$y$的过程可以被分解成为一系列的语义解析决策的过程。
-所以，增强解析器模型的基本思路为：解析器从初始状态启动并不断根据学习的策略采取不同的操作。
-每个动作（action）都会将解析器从一个状态(state)转移为另一个状态，知道解析器到达它的最终状态并停止。
-在解析器的最终状态下，我们可以获取一个完整的输出$y$。
-我们采取一种概率的方法来对整个的策略(policy)建模。
-它可以对由输入$x$产生的有效的动作(action)的集合以及解码器产生的历史行为进行概率分布进行预测。
-所以，整个增量语义解析器的训练目标就转换为了如何优化一个参数化的策略的问题。
+首先，针对输入$x$来生成结构化的输出$y$的过程可以被分解成为一系列的语义解析决策的过程。
+我们参考强化学习的基本范式，将增强解析器模型的基本过程定义为：
+
+\begin{itemize}
+  \item 解析器（agent）从初始状态启动并不断根据学习的策略采取不同的动作（action）。每个动作都会将解析器从一个状态(state)转移为另一个状态，直到解析器到达它的最终状态并停止。在解析器的最终状态下，我们可以得到输出$y$。
+\end{itemize}
+
+在这里，我们采取一种概率的方法来对整个策略(policy)进行建模。
+我们通过对输入$x$产生的所有动作(action)和解码器产生的历史行为建模得到一个概率分布。
+而整个增量语义解析器的训练目标就转换为了如何去优化一个参数化的策略的问题，如公式公式\ref{enl2sql:eq1}所示。
 
 % ， 其中$\theta$为模型参数。
 \begin{equation}
@@ -100,7 +393,7 @@ $c$代表数据库表的模式“Name Location Height(ft) Floor Year”，其中
     P_{\theta}(y|x) = P_{\theta}(\boldsymbol{a}|x),  \qquad \theta\text{为模型参数}
 \end{equation}
 
-根据公式\ref{enl2sql:eq1}，通过执行动作(action)序列$\boldsymbol{a} = \{a_{1},a_{2},...,a_{k}\}$，解析器将被不断引导并从初始状态转换为包含输出$y$的最终状态。
+在公式\ref{enl2sql:eq1}中，$\theta$为模型参数，通过执行动作(action)序列$\boldsymbol{a} = \{a_{1},a_{2},...,a_{k}\}$，解析器将被不断引导并从初始状态转换为包含输出$y$的最终状态。
 在此，我们需要假设每个输出$y$有且仅有一个对应的动作序列$\boldsymbol{a}$（详见\ref{enl2sql:ndo}节内容）。
 行动序列的概率$P_{\theta}(\boldsymbol{a}|x)$可展开为增量策略概率的乘积(公式\ref{enl2sql:eq2})：
 
@@ -111,10 +404,10 @@ $c$代表数据库表的模式“Name Location Height(ft) Floor Year”，其中
     P_{\theta}(\boldsymbol{a}|x) = \prod^k_{i=1}P_{\theta}(a_{i}|x,a_{<i}),   \qquad |\boldsymbol{a}| = k
 \end{equation}
 
-在推断(inference)期间，我们的模型并非尝试枚举整个输出空间并找到最高的得分$\boldsymbol{a}^{*} = \mathop{\arg\max}_{\boldsymbol{a}} P_{\theta}(\boldsymbol{a}|x)$，
+在在线生成期间，我们的模型并非尝试枚举整个输出空间并找到最高的得分$\boldsymbol{a}^{*} = \mathop{\arg\max}_{\boldsymbol{a}} P_{\theta}(\boldsymbol{a}|x)$，
 而是在解码器中采用了一种贪心的方法：在每一步都根据策略(policy)来选择得分最高的行动，即$a^{*}_{i} = \mathop{\arg\max}_{a_{i}} P_{\theta}(a_{i}|x,a^{*}_{<i})$。
 
-在后面的几节中，我们将给出解析器状态(state)的定义以及动作(action)清单，还会详细介绍整个基于编码器-解码器神经网络体系结构的增强解析器模型。
+在后面的几节中，我们将给出增强解析器的状态(state)的定义以及动作(action)清单，还会详细介绍整个基于编码器-解码器神经网络体系结构的增强解析器模型。
 
 % \begin{figure}[!htp]
 %   \centering
@@ -199,7 +492,7 @@ $p[AGG \mapsto agg]$表示与状态$p$处于同一状态，不过其特征值$AG
 $||$表示列表展开；$COND_{-1}$表示在列表中的上一个元素；
 
 
-值得注意的是，动作$CONDVAL$会从输入问句$w$中选择所需的文字段$w_{i:j}$。
+需要特别解释的是，动作$CONDVAL$会从输入问句$w$中选择所需的文字段$w_{i:j}$。
 但这样做会导致一个问题，它将产生大量的动作，其数量级为问题长度的二次方。
 因此，我们将动作$CONDVAL$分解为两个连续的子动作，一个去选择起始位置$w_i$,另一个则选择终止位置$w_j$。
 在动作序列的最后，我们需要增加一个$END$动作来执行解析过程并使解析器进入结束状态。
@@ -213,28 +506,17 @@ $||$表示列表展开；$COND_{-1}$表示在列表中的上一个元素；
   \item $CONDCOL(c_2)$
   \item $CONDOP(=)$
   \item $CONDVAL(w_{8:8})$
+  \item $END$
 \end{enumerate}
 % ${AGG(NONE),SELCOL(c_3),CONDCOL(c_1),CONDOP(=),CONDVAL(w_{5:6}),CONDCOL(c_2),CONDOP(=),CONDVAL(w_{8:8})}$
 
-该节中的定义是基于所有有效序列都具有AGG  SELCOL  (CONDCOL  CONDOP  CONDVAL)* END形式的假设之上。
-也就保证了我们可以从所有的最终状态中提取出完整的逻辑形式出来。
+需要注意的是该节中的定义是基于所有有效序列都具有AGG  SELCOL  (CONDCOL  CONDOP  CONDVAL)* END形式的假设之上。
+这样的假设能够保证我们可以从所有的最终状态输出中提取出完整的逻辑形式出来。
 对于其他不同结构的SQL语句来说，我们还需要重新设计动作的清单以及解析器的状态。
 
 
 \subsection{编码器}
 \label{enl2sql:encoder}
-
-\begin{figure}[!htp]
-  \centering
-  \includegraphics[width=15cm]{example/nl2sqlapproach.pdf}
-  \bicaption[这里将出现在插图索引中]
-    {基于深度强化学习的NL2SQL生成的技术方案}
-    {English caption}
-  \label{fig:nl2sqlapproach}
-\end{figure}
-
-基于深度强化学习的NL2SQL生成的技术方案如图\ref{fig:nl2sqlapproach}所示。
-包括xxxxx（此处有一大段）。
 
 \begin{figure}[!htp]
   \centering
@@ -246,9 +528,8 @@ $||$表示列表展开；$COND_{-1}$表示在列表中的上一个元素；
 \end{figure}
 
 
-其中基于深度强化学习的NL2SQL生成网络包含编码器和解码器两个部分，如图\ref{fig:nl2sqlnet}所示。
-
-编码器的具体步骤如下：
+增强解析器的网络结构如图\ref{fig:nl2sqlnet}所示，包含编码器和解码器两个部分。
+其中，编码器的具体步骤如下：
 \begin{enumerate}
   \item 对于输入的句子$w$中的每个单词$w_i$，先将其使用词向量进行向量编码(word embedding[！！引用！！])。
   \item 将其送入一个双向的长短期记忆网络（bi-directional Long Short-Term Memory，简称bi-LSTM）,其中每个细胞(cell)会有一个隐状态$h^W_i$。
