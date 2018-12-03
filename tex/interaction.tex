@@ -100,9 +100,9 @@
 \begin{figure}[!htp]
   \centering
   \includegraphics[width=18cm]{example/nli.pdf}
-  \bicaption[这里将出现在插图索引中]
+  \bicaption[基于映射的INL2SQL生成示例]
     {基于映射的INL2SQL生成示例}
-    {English caption}
+    {An Example Of Interactive Nature Language To SQL Query Statement With Map}
   \label{fig:NLI}
 \end{figure}
 
@@ -153,9 +153,9 @@
 \begin{figure}[!htp]
     \centering
     \includegraphics[width=15cm]{example/NLIapproach.pdf}
-    \bicaption[这里将出现在插图索引中]
-      {基于映射的NLI2SQL生成的总体方案}
-      {English caption}
+    \bicaption[基于映射的INL2SQL生成的总体方案]
+      {基于映射的INL2SQL生成的总体方案}
+      {An Overview Of Interactive Nature Language To SQL Query Statement With Map}
     \label{fig:NLIapproach}
   \end{figure}
 图\ref{fig:NLIapproach}是本文从自然语言生成SQL语句模型的总体方案，它包含依赖解析树生成、解析树节点映射、解析树优化重构、查询树翻译、交互式对话器、用户接口六个模块：
@@ -195,9 +195,9 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 
 \begin{table}[!hpb]
   \centering
-  \bicaption[指向一个表格的表目录索引]
+  \bicaption[解析树节点的类型]
     {解析树节点的类型}
-    {A Table}
+    {Different Types of Nodes}
   \label{nli:jxsjddlx}
   \begin{tabular}{@{}llr@{}} \toprule
     % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
@@ -254,9 +254,9 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 
 \begin{table}[!hpb]
     \centering
-    \bicaption[指向一个表格的表目录索引]
+    \bicaption[合法解析树结构规则]
       {合法解析树结构规则}
-      {A Table}
+      {Grammar of Valid Parse Trees}
     \label{nli:hfjxsjggz}
     \begin{tabular}{@{}llr@{}} \toprule
       % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
@@ -360,9 +360,9 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 \begin{figure}[!htp]
     \centering
     \includegraphics[width=15cm]{example/classicmodel.png}
-    \bicaption[这里将出现在插图索引中]
+    \bicaption[Classicmodels数据库的数据库模式图]
       {Classicmodels数据库的数据库模式图}
-      {English caption}
+      {Database Schema of Classicmodels Database}
     \label{fig:NLIclassicmodel}
   \end{figure}
 
@@ -371,9 +371,9 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 
 \begin{table}[!hpb]
     \centering
-    \bicaption[指向一个表格的表目录索引]
+    \bicaption[自然语言查询实例]
       {自然语言查询实例}
-      {A Table}
+      {Instances Of Natural Qanguage Query}
     \label{nli:zryycxsl}
     \begin{tabular}{cc} \toprule
       % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
@@ -392,9 +392,9 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 
 \begin{table}[!hpb]
     \centering
-    \bicaption[指向一个表格的表目录索引]
+    \bicaption[模型生成SQL语句的准确性]
       {模型生成SQL语句的准确性}
-      {A Table}
+      {The Accuracy Of Generating SQL Statements}
     \label{nli:mxscsyjdzqx}
     \begin{tabular}{cc} \toprule
       % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
@@ -411,9 +411,9 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 
 \begin{table}[!hpb]
   \centering
-  \bicaption[指向一个表格的表目录索引]
+  \bicaption[模型在无交互情况下生成SQL语句的准确性]
     {模型在无交互情况下生成SQL语句的准确性}
-    {A Table}
+    {The Accuracy Of Generating SQL Statements Without Interaction}
   \label{nli:mxzwjhqkxscsyjdzqx}
   \begin{tabular}{cc} \toprule
     % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
@@ -434,10 +434,8 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
     \item	尽管人机交互机制对于节点映射的准确率有较大提升，但根据观察，立足于目前数据量较小、数据库模式简单的前提下，这一机制能保证映射相似度排名前五的SQL组件包含正确的映射关系；但随着数据库数据量的增加、数据库模式的复杂化，目前节点映射的相似度计算机制，可能无法确保正确的SQL组件能有较高的相似度。
 \end{enumerate}
 
-
 \section{本章小结}
-本章提出了从自然语言到SQL语句的模型的设计和具体实现，基本思想是结合自然语言解析技术和人机交互思想，用人机交互的方式指导解析过程，减轻自然语言解析的歧义问题和错误情况，相比于纯自然语言解析技术，大大提升了准确性。由于准确性得到了提升，该模型的可用性也就得到了提升。
-
+本章提出了交互式自然语言接口生成SQL语句模型的设计和具体实现，基本思想是结合自然语言解析技术，使用人机交互的方式指导解析过程，减轻自然语言解析的歧义问题和错误情况，相比于纯自然语言解析技术，大大提升了准确性。
 本章针对自然语言生成SQL模型的准确性进行了实验，实验数据库为MySQL样例数据库classicmodels，测试用自然语言查询意图为作者自行根据实验数据库建立，分别包含简单、中等、困难三种复杂度的查询意图。以此为测试数据集，对完整模型和无交互机制的模型进行了实验，并给出了实验结果。结果发现，完整模型能较好的处理简单和中等复杂度的查询意图，一定程度上能处理困难复杂度的查询意图，而且经过与无交互机制的模型进行对比，发现交互机制对于模型准确度的提升十分显著。但对实验结果进行细致分析，也发现模型存在处理能力仍然不足、无法处理子查询、自然语言意图形式比较固定、无法处理特殊词组等问题，需要进一步进行提升和改进。
 
 

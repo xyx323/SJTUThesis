@@ -26,9 +26,9 @@
 \begin{figure}[!htp]
     \centering
     \includegraphics[width=17cm]{example/cnl2sql.pdf}
-    \bicaption[这里将出现在插图索引中]
+    \bicaption[中文自然语言问题生成SQL查询语句的示例]
       {中文自然语言问题生成SQL查询语句的示例}
-      {English caption}
+      {An Example Of Chinese Nature Language To SQL Statement}
     \label{fig:cnl2sqlexample}
   \end{figure}
 
@@ -53,9 +53,9 @@ $c$代表数据库表的模式“Name Location Height(ft) Floor Year”，其中
   \centering
   \includegraphics[width=7cm]{example/SDPA.png}
   \includegraphics[width=7cm]{example/MHA.png}
-  \bicaption[这里将出现在插图索引中]
+  \bicaption[缩放点积注意力和多头注意力]
     {缩放点积注意力（scaled dot-product attention）和多头注意力（multi-head attention）}
-    {English caption}
+    {Scaled Dot-product Attention And Multi-head Attention}
   \label{fig:SDPAMHA}
 \end{figure}
 
@@ -119,14 +119,14 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
 当同时学习的任务十分相关时，学习不同的任务可以提供归纳偏差[！！引用！！]，强迫模型去学习那些更通用和普遍的表示方法。
 通过将许多单独的任务同时学习并比较，可以充分验证多任务学习的有效性[！！引用！！]。
 
-显然，本文使用TCR模板将子任务转换为统一形式后，采用多任务学习的学习策略可以有效地提升模型的性能。
+显然，本文使用TCR模板将子任务转换为统一形式后，采用多任务学习的学习策略可以有效地提升模型的性能。 
 
 % \subsection{NLP领域的元学习}
 
 
 \section{解决方案}
 
-在本节中，我们会介绍如何把中文自然语言翻译为英文自然语言任务与英文自然语言生成SQL查询语句任务进行统一，之后提出一种基于多任务学习的神经网络结构并解释说明为何这样的网络结构可以有效地解决中文自然语言问题生成SQL查询语句问题。
+在本节中，我们会先介绍如何把中文自然语言翻译为英文自然语言任务与英文自然语言生成SQL查询语句任务进行统一，之后提出一种基于多任务学习的神经网络结构并解释说明为何这样的网络结构可以有效地解决中文自然语言问题生成SQL查询语句问题。
 
 \subsection{TCR模板}
 
@@ -138,9 +138,9 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
 \begin{figure}[!htp]
     \centering
     \includegraphics[width=17cm]{example/cnl2sqlproblem.pdf}
-    \bicaption[这里将出现在插图索引中]
+    \bicaption[中文自然语言问题生成SQL查询语句的错误示例]
       {中文自然语言问题生成SQL查询语句的错误示例}
-      {English caption}
+      {An Error Example Of Chinese Nature Language To SQL Statement}
     \label{fig:cnl2sqlproblem}
   \end{figure}
 
@@ -154,9 +154,9 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
 \begin{figure}[!htp]
     \centering
     \includegraphics[width=17cm]{example/tcr.pdf}
-    \bicaption[这里将出现在插图索引中]
+    \bicaption[TCR模板]
       {TCR模板（任务-内容-结果模板）}
-      {English caption}
+      {TCR Template}
     \label{fig:cnl2sqltcr}
   \end{figure}
 
@@ -178,9 +178,9 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \begin{figure}[!htp]
   \centering
   \includegraphics[width=17cm]{example/cnl2sqlnet.pdf}
-  \bicaption[这里将出现在插图索引中]
+  \bicaption[多任务网络]
     {多任务网络}
-    {English caption}
+    {Multitasking Network}
   \label{fig:cnl2sqlnet}
 \end{figure}
 
@@ -385,9 +385,9 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \subsection{多任务网络的实验结果}
 
 \begin{table}[!htpb]
-  \bicaption[出现在表目录的标题]
+  \bicaption[多任务网络的实验结果]
     {多任务网络的实验结果}
-    {A Table with footnotes}
+    {The Experiment Result Of Multitasking Network}
   \label{tab:drwwldsyjg}
   \centering
   \begin{threeparttable}[b]
@@ -479,9 +479,9 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 
 \begin{table}[!htpb]
-  \bicaption[出现在表目录的标题]
+  \bicaption[多任务网络在不同训练策略下的实验结果]
     {多任务网络在不同训练策略下的实验结果}
-    {A Table with footnotes}
+    {The Experimental results Of Multitasking Networks With Different Strategies}
   \label{tab:drwwlzbtxlclxdsyjg}
   \centering
   \begin{threeparttable}[b]
@@ -541,3 +541,11 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 这些结果表明在多任务网络模型的基础上进行微调可以是的模型拓展到域外的问题上，甚至可以适应更广的文本分类问题上。
 
 \section{本章小结}
+
+为了进一步提高NL2SQL生成的准确性以及解决中文自然语言生成SQL查询语句的问题，本章提出了一种基于多任务学习的NL2SQL生成的解决方案。
+为了解决输入一致性的问题，本章提出使用TCR模板对中文自然语言转换为英文自然语言任务和英文自然语言转换为SQL查询语句任务进行统一。
+接着，本章提出了由编码器和解码器构成的多任务网络模型。
+其中，编码过程包含单独编码、对准、对偶协同注意力、压缩、自注意力和最终编码阶段；
+解码过程包含结果表示、自注意力、获得中间状态、任务与内容注意力、获得任务与内容状态、多指针生成阶段。
+最后，本章进行了多任务网络的实验、在不同优化策略下的实验等。
+将模型应用在更多的任务上的实验结果证明了本文方法能够很好地完成中文自然语言生成SQL语言任务并且具有很好地可拓展性。
