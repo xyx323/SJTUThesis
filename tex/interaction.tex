@@ -158,34 +158,74 @@
       {An Overview Of Interactive Nature Language To SQL Query Statement With Map}
     \label{fig:NLIapproach}
   \end{figure}
-图\ref{fig:NLIapproach}是本文从自然语言生成SQL语句模型的总体方案，它包含依赖解析树生成、解析树节点映射、解析树优化重构、查询树翻译、交互式对话器、用户接口六个模块：
+图\ref{fig:NLIapproach}是基于映射的INL2SQL生成的总体方案，它包含依赖解析树生成、解析树节点映射、解析树优化重构、查询树翻译、意图交互五个模块：
 \begin{enumerate}
-    \item 用户接口：用户与系统进行交互的接口，包括输入自然语言、返回SQL语句、解析过程中的交互等等。
-    \item 交互式对话器：管理解析过程与用户的交互，在适当的时候与用户进行交互，让用户对解析过程进行指导。
+    % \item 用户接口：用户与系统进行交互的接口，包括输入自然语言、返回SQL语句、解析过程中的交互等等。
     \item 依赖解析树生成：将用户输入的，以自然语言表示的查询意图，应用自然语言理解技术，转化为依赖解析树，即将词语进行词性标注，以及识别出词语之间的关系，并将其组织成一个树状结构。详见\ref{nli:yljxssc}节。
     \item 解析树节点映射：根据解析树节点对应的词语和数据库元数据、数据、SQL语法等信息，将解析树节点映射为SQL语法组件。
-在这个过程中，如果节点的映射有多个候选答案，交互式对话器会发起与用户的交互，将多个候选映射展示给用户，让用户来进行选择。详见\ref{nli:jxsjdys}节。
+在这个过程中，如果节点的映射有多个候选答案，意图交互模块会发起与用户的交互，将多个候选映射展示给用户，让用户来进行选择。详见\ref{nli:jxsjdys}节。
+    \item 意图交互：管理解析过程与用户的交互，在适当的时候与用户进行交互，让用户对解析过程进行指导。
     \item 解析树优化重构：节点映射完毕后，解析树节点经过系统匹配和用户指导后，得到了比较准确的结果，但解析树的结构仍是最初由依赖解析树生成得到的结构，这一原始结构的准确度并不高，受限于自然语言的复杂性和省略性，可能会有错误关系、缺失关系、缺失节点等等。
 为了使解析树能得到比较准确的结构，将设计算法和规则，修正错误关系，补全缺失节点和缺失关系，得到较为准确的解析树，称为查询树。详见\ref{nli:jxsyhcg}节。
-    \item 查询树翻译：解析树的结构已经符合SQL语法，节点映射结果也对应于真实的SQL语法、数据库schema或数据，可以很自然地将树状结构的翻译为SQL语句，最后将SQL语句通过用户接口返回给用户。详见\ref{nli:cxsfy}节。
+    \item 查询树翻译：解析树的结构已经符合SQL语法，节点映射结果也对应于真实的SQL语法、数据库schema或数据，可以很自然地将树状结构的翻译为SQL语句，最后将SQL语句及查询结果返回给用户。详见\ref{nli:cxsfy}节。
 \end{enumerate}
 
-% 1）	用户接口：用户与系统进行交互的接口，包括输入自然语言、返回SQL语句、解析过程中的交互等等。
-% 2）	交互式对话器：管理解析过程与用户的交互，在适当的时候与用户进行交互，让用户对解析过程进行指导。
-% 3）	依赖解析树生成：将用户输入的，以自然语言表示的查询意图，应用自然语言理解技术，转化为依赖解析树，即将词语进行词性标注，以及识别出词语之间的关系，并将其组织成一个树状结构。详见3.2节。
-% 4）	解析树节点映射：根据解析树节点对应的词语和数据库元数据、数据、SQL语法等信息，将解析树节点映射为SQL语法组件。在这个过程中，如果节点的映射有多个候选答案，交互式对话器会发起与用户的交互，将多个候选映射展示给用户，让用户来进行选择。详见3.3节。
-% 5）	解析树优化重构：节点映射完毕后，解析树节点经过系统匹配和用户指导后，得到了比较准确的结果，但解析树的结构仍是最初由依赖解析树生成得到的结构，这一原始结构的准确度并不高，受限于自然语言的复杂性和省略性，可能会有错误关系、缺失关系、缺失节点等等。为了使解析树能得到比较准确的结构，将设计算法和规则，修正错误关系，补全缺失节点和缺失关系，得到较为准确的解析树，称为查询树。详见3.4节。
-% 6）	查询树翻译：解析树的结构已经符合SQL语法，节点映射结果也对应于真实的SQL语法、数据库schema或数据，可以很自然地将树状结构的翻译为SQL语句，最后将SQL语句通过用户接口返回给用户。详见3.5节。
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=13cm]{example/NLIschema.pdf}
+  \bicaption[查询示例及其图模式]
+    {查询示例及其图模式}
+    {Query Examples And Graph Schema}
+  \label{fig:NLIschema}
+\end{figure}
 
-接下来，将详细阐述依赖解析树模块、解析树节点映射模块、解析树优化重构模块、查询树翻译器的设计思路和实现细节。
+需要特别说明的是，一般的搜索引擎提供的方案或者之前的NLIDB的方案所产生的结果通常无法解释。
+例如，假设用户的输入是图\ref{fig:NLIschema}中的输入1，使用之前的方案可以得到结果为数字5，而用户无法知道这个答案是否是正确的；
+除此之外，由于自然语言的表达十分复杂，用户的输入可能是模棱两可的。
+例如，假设用户的输入是图\ref{fig:NLIschema}中的输入1，查询语句中所使用的单词是“publication”，而在业务数据库中，“publication”再数据库中对应的可能是表中的“article”，“journal”等等字段。
+因此，在基于映射的INL2SQL中，我们并不是直接产生查询的结果，而是向用户解释解析的过程，并通过多轮的交互修复解析中产生的“歧义”问题。
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=13cm]{example/NLIexample.pdf}
+  \bicaption[解析过程示例]
+    {解析过程示例}
+    {Steps Of Parsing}
+  \label{fig:NLIexample}
+\end{figure}
+
+在此，我们先给出基于映射的INL2SQL生成的整个解析过程的示例（如图\ref{fig:NLIexample}所示），再对解决方案中的每个模块进行详细介绍。
+第一步，通过依赖解析树生成模块，系统将用户的自然语言查询输入（图\ref{fig:NLIschema}中的输入2）转换为一颗简单的语法解析树（图\ref{fig:NLIexample}(1)）。
+第二步，解析树节点映射模块为解析树种的每个节点生成一个最佳映射（图\ref{fig:NLIexample}(2)），并通过意图交互模块向用户通知“VLDB”节点在数据库模式中可以映射为“conference”和"journal"而系统选择了“conference”作为其默认映射。
+第三步，解析树优化重构模块将根据最佳映射对解析树进行重构和调整，生成k个有效的解析树。同时，意图交互模块会结合自然语言模板将这k个候选的解析树告知用户并让用户进行选择，例如：“return the authors, where the papers of the author in VLDB after 2000 is more than Bob”。被选择的最佳的解析树如图\ref{fig:NLIexample}(3)。
+之后，通过插入一些隐藏节点，解析树被实例化为图\ref{fig:NLIexample}(4)，与用户的交互为“return the authors, where the number of papers of the author in VLDB after 2000 is more than the number of paper of Bob \underline{in VLDB} \underline{after 2000}"。
+若用户需要取消\underline{in VLDB}和\underline{after 2000}，系统将继续执行第二步和第三步。
+第四步，查询树翻译模块将结合SQL语句的表达式将最终确认的解析树转换为SQL查询语句并返回给用户。
+
+接下来，本文将详细阐述依赖解析树模块、解析树节点映射模块、解析树优化重构模块、查询树翻译器的设计思路和实现细节。
+
+% \subsection{查询机制}
+% \label{nli:cxjz}
+
+
+% \begin{figure}[!htp]
+%   \centering
+%   \includegraphics[width=15cm]{example/NLIschema.pdf}
+%   \bicaption[示例的解析模式]
+%     {示例的解析模式}
+%     {write}
+%   \label{fig:NLIschema}
+% \end{figure}
 
 \subsection{依赖解析树生成}
 \label{nli:yljxssc}
 
-本模块将用户输入的自然语言查询意图解析为解析树，包含各词语的词性标注、关系提取等等信息。
-在具体实现过程中，这一模块基于StanfordCoreNLP\cite{de2018generating}实现。
-StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持多种语言，还提供了C++、Python、Java等多种程序语言的编程接口，提供依赖解析、命名实体识别、词性标注、情感分析、机器翻译等多种功能。
-本模块调用该工具，将自然语言解析为依赖解析树。
+本模块将用户输入的自然语言查询解析为解析树，主要内容包含词语的词性标注、关系提取等。
+
+在具体实现过程中，这一模块基于Stanford Parser\cite{de2018generating}实现。
+Stanford Parser是斯坦福大学推出的自然语言处理工具，提供依赖解析、命名实体识别、词性标注、情感分析、机器翻译等多种功能。
+本模块调用该工具，使用依赖解析的相关接口将自然语言查询解析为依赖解析树。
+如图\ref{fig:NLIexample}(1)所示，依赖解析树的每个节点为用户输入的单词或短语，每条边为提取出的单词之间的语义依赖关系。
 
 \subsection{解析树节点映射}
 \label{nli:jxsjdys}
@@ -240,6 +280,7 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 对相似度进行排序，可以得到前五相似的SQL组件，如果前五相似的SQL组件的相似度$Sim(n,v)$的值差别较大，则直接以相似度最高的SQL组件作为当前单词n的映射，并赋予该组件对应的节点类型；
 若前五相似的SQL组件的相似度差别较小，则视作歧义，将候选的SQL组件返回给用户，让用户来进行选择，最后用户选择的结果会作为当前节点的映射。 
 
+
 \subsection{解析树优化重构}
 \label{nli:jxsyhcg}
 
@@ -248,28 +289,28 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 
 \subsubsection{结构调整}
 
+\begin{table}[!hpb]
+  \centering
+  \bicaption[合法解析树结构规则]
+    {合法解析树结构规则}
+    {Grammar of Valid Parse Trees}
+  \label{nli:hfjxsjggz}
+  \begin{tabular}{@{}llr@{}} \toprule
+    % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
+    1  & 	Q -> ( SClause ) ( ComplexCondition ) *\\
+    2  & 	SClause -> SELECT + GNP\\
+    3  & 	ComplexCondition -> ON + ( leftSubtree * rightSubtree )\\
+    4  & 	leftSubtree -> GNP\\
+    5  & 	rightSubtree -> GNP | VN | MIN | MAX\\
+    6  & 	GNP -> ( FN + GNP ) | NP\\
+    7  & 	NP -> NN + ( NN ) * ( Condition ) *\\
+    8  & 	condition -> VN | ( ON + VN )\\\bottomrule
+  \end{tabular}
+\end{table}
+
 在进行结构调整之前，首先定义什么样的树结构是好的、合法的。
 我们从两个角度来考虑这个问题：第一点是树结构与经依赖解析器解析后的原始结构的差别有多大；
 第二点是树结构是否符合SQL的语法，这一点的评估可以根据表\ref{nli:hfjxsjggz}的定义来确定\cite{li2014constructing}。
-
-\begin{table}[!hpb]
-    \centering
-    \bicaption[合法解析树结构规则]
-      {合法解析树结构规则}
-      {Grammar of Valid Parse Trees}
-    \label{nli:hfjxsjggz}
-    \begin{tabular}{@{}llr@{}} \toprule
-      % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-      1  & 	Q -> ( SClause ) ( ComplexCondition ) *\\
-      2  & 	SClause -> SELECT + GNP\\
-      3  & 	ComplexCondition -> ON + ( leftSubtree * rightSubtree )\\
-      4  & 	leftSubtree -> GNP\\
-      5  & 	rightSubtree -> GNP | VN | MIN | MAX\\
-      6  & 	GNP -> ( FN + GNP ) | NP\\
-      7  & 	NP -> NN + ( NN ) * ( Condition ) *\\
-      8  & 	condition -> VN | ( ON + VN )\\\bottomrule
-    \end{tabular}
-  \end{table}
 
 表\ref{nli:hfjxsjggz}根据SQL语句的语法，结合了树状结构，定义了能合理的转化为SQL语句的语法树应该满足什么样的规则，这样的语法树我们称之为查询树。
 在表\ref{nli:hfjxsjggz}中，“ + ”代表父子节点的关系，“ * ”代表兄弟节点的关系，上标“ * ”代表可重复出现的兄弟节点，“ | ”代表“或者关系”，表示当前节点可能存在的情况。
@@ -312,6 +353,7 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
     \State \Return$results$
     \end{algorithmic}
     \end{algorithm}
+
 算法\ref{nli:jxsjgtzsf}展示了结构调整的算法，算法的基本思想是，建立一个优先级队列，对于当前的解析树，调用adjust()函数（第8行），通过一次移动子树操作，生成在这一次操作后所有可能的结构；
 然后记录当前树的哈希值（第12行），防止之后出现重复的树结构；
 若当前树结构没有出现过（第10行），且edit值小于一个阈值，则对此树进行下一步操作；
@@ -326,16 +368,26 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 
 \subsubsection{隐藏节点插入}
 
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=13cm]{example/NLIimplicit.pdf}
+  \bicaption[隐藏节点插入过程示例]
+    {隐藏节点插入过程示例}
+    {Steps Of Parsing}
+  \label{fig:NLIimplicit}
+\end{figure}
+
 结构调整完成后，对经过排序和用户交互筛选后的结果集合，进行隐藏节点插入。
+图\ref{fig:NLIimplicit}展示了图\ref{fig:NLIschema}中的输入3从简单的解析树、有效解析树再到隐藏节点插入后的解析树的过程。
 在给出隐藏节点插入的方法之前，先给出需要用到的概念定义，即“核心节点”。
 核心节点指的是在节点类型为leftSubtree和rightSubtree的情况下（表\ref{nli:hfjxsjggz}），leftSubtree（rightSubtree）的所有子节点中，高度最高的名称节点被称为核心节点。
 
 经过研究，需要进行隐藏节点插入的情况有以下几种：
 \begin{enumerate}
     \item 左子树（leftSubtree）与右子树（rightSubtree）的核心节点对应了不同的SQL组件，即认为右子树真正的核心节点在自然语言表达时被省略了\cite{zeng2014breaking}；
-    这是十分常见的现象，因为人在进行自然语言表达时，对两个值进行比较时，会很自然的省略掉后者的一部分，如“Ihavemorebooksthanyours”这句话，就将最后的“yourbooks”给省略成了“yours”；
-    \item 左右子树的约束条件应该一致，如果不一致，则认为右子树一部分约束条件被省略了，如“returnauthorswhosepaperspublishedin2018morethanJack’s”这句话，过滤条件的左子树有“in2018”这一约束，而右子树在解析之后没有这一约束，事实上右子树的这一约束被隐藏了，需要作为隐藏节点插入进去；
-    \item 某些函数会被省略，如聚合函数“COUNT”，在自然语言表达中经常会被省略，如“Ihavemorebooksthanyours”这句话，“thenumberof”就被省略了。在树结构中，如果过滤条件的操作符为“more”、“less”等词语，而左右子树的核心节点对应的是非数字类型的SQL组件，那么就认为“COUNT”被省略了，需要作为隐藏节点插入解析树。
+    这是十分常见的现象，因为人在进行自然语言表达时，对两个值进行比较时，会很自然的省略掉后者的一部分，如“I have more books than yours”这句话，就将最后的“your books”给省略成了“yours”；
+    \item 左右子树的约束条件应该一致，如果不一致，则认为右子树一部分约束条件被省略了，如“return authors whose papers published in 2018 more than Jack’s”这句话，过滤条件的左子树有“in 2018”这一约束，而右子树在解析之后没有这一约束，事实上右子树的这一约束被隐藏了，需要作为隐藏节点插入进去；
+    \item 某些函数会被省略，如聚合函数“COUNT”，在自然语言表达中经常会被省略，如“I have more books than yours”这句话，“the number of”就被省略了。在树结构中，如果过滤条件的操作符为“more”、“less”等词语，而左右子树的核心节点对应的是非数字类型的SQL组件，那么就认为“COUNT”被省略了，需要作为隐藏节点插入解析树。
 \end{enumerate}
 % 1）	左子树（leftSubtree）与右子树（rightSubtree）的核心节点对应了不同的SQL组件，即认为右子树真正的核心节点在自然语言表达时被省略了[14]；这是十分常见的现象，因为人在进行自然语言表达时，对两个值进行比较时，会很自然的省略掉后者的一部分，如“Ihavemorebooksthanyours”这句话，就将最后的“yourbooks”给省略成了“yours”；
 % 2）	左右子树的约束条件应该一致，如果不一致，则认为右子树一部分约束条件被省略了，如“returnauthorswhosepaperspublishedin2018morethanJack’s”这句话，过滤条件的左子树有“in2018”这一约束，而右子树在解析之后没有这一约束，事实上右子树的这一约束被隐藏了，需要作为隐藏节点插入进去；
@@ -356,87 +408,112 @@ StanfordCoreNLP是斯坦福大学推出的自然语言处理工具集，支持�
 \section{实验与分析}
 
 \subsection{数据集}
-本次实验所使用的业务数据库为MySQL的样例数据库Classicmodels，图3-2为Classicmodels数据库的数据库模式图
+
 \begin{figure}[!htp]
     \centering
-    \includegraphics[width=15cm]{example/classicmodel.png}
+    \includegraphics[width=13cm]{example/classicmodel.png}
     \bicaption[Classicmodels数据库的数据库模式图]
       {Classicmodels数据库的数据库模式图}
       {Database Schema of Classicmodels Database}
     \label{fig:NLIclassicmodel}
   \end{figure}
 
-实验所使用的自然语言查询数据集由作者根据Classicmodels数据库的模式建立，根据查询意图的复杂度，分为简单、中等、困难三类。每种类别，提出了20条自然语言查询，共计60条，用来测试模型的准确性。
-表\ref{nli:zryycxsl}给出了三种类别的自然语言查询示例。
-
-\begin{table}[!hpb]
+  \begin{table}[!hpb]
     \centering
-    \bicaption[自然语言查询实例]
-      {自然语言查询实例}
-      {Instances Of Natural Qanguage Query}
-    \label{nli:zryycxsl}
-    \begin{tabular}{cc} \toprule
+    \bicaption[MAS数据库数据统计]
+      {MAS数据库数据统计}
+      {MAS Database Statistics}
+    \label{nli:MASsjksjtj}
+    \begin{tabular}{|c|c|c|c|} 
+      % \toprule
       % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-      查询语句复杂度 & 示例\\\midrule
-      简单 & return all the custormers\\
-      中等 & return all the offices in London\\
-      困难 & return the city of office that has an employee named Diane\\
-      \bottomrule
+      \hline
+      表名 & 数据量 & 表名 & 数据量\\
+      \hline
+      Publica & 2.45M & Author & 1.25M\\
+      \hline
+      cite & 20.3M & Domain & 24\\
+      \hline
+      Conference & 2.9K & Journal & 1.1K\\
+      \hline
+      Organiza & 11K & Keywords & 37K\\
+      \hline
+      % 简单 & return all the custormers\\
+      % 中等 & return all the offices in London\\
+      % 困难 & return the city of office that has an employee named Diane\\
+      % \bottomrule
     \end{tabular}
   \end{table}
 
-\subsection{实验结果}
 
-首先将所有自然语言查询语句，输入系统，经过各组件的处理，得到系统生成的SQL语句，再判断其是否正确表达了自然语言查询语句的意图。
-实验结果如表\ref{nli:mxscsyjdzqx}所示。
-
-\begin{table}[!hpb]
-    \centering
-    \bicaption[模型生成SQL语句的准确性]
-      {模型生成SQL语句的准确性}
-      {The Accuracy Of Generating SQL Statements}
-    \label{nli:mxscsyjdzqx}
-    \begin{tabular}{cc} \toprule
-      % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-      查询语句复杂度 & 准确率\\\midrule
-      简单 & 100\%\\
-      中等 & 80\%\\
-      困难 & 35\%\\
-      \bottomrule
-    \end{tabular}
-\end{table}
-
-实验还检验了在没有用户交互指定节点映射、选择合适树结构的情况下，模型生成SQL语句的准确性，如表\ref{nli:mxzwjhqkxscsyjdzqx}所示；
-由于没有选择合适树结构，导致解析树结构调整之后有多个候选结果，最后返回结果也会有多个，故只要返回结果中包含正确SQL语句，就视做正确生成：
+本次实验所使用的业务数据库为MySQL的样例数据库Classicmodels以及MAS(Microsoft Academic Search)数据库，图\ref{fig:NLIclassicmodel}为Classicmodels数据库的数据库模式图，图\ref{fig:NLIschema}和表\ref{nli:MASsjksjtj}为MAS的模式图和数据统计。
+实验所使用的自然语言查询数据集根据查询意图的复杂度，分为简单、中等、困难三类。
+Classicmodels数据集中的每种类别，提出了20条自然语言查询，共计60条，用来测试模型的有效性。
+MAS数据集中的每个类别有100条自然语言查询，共计300条，用于测试模型的准确性。
 
 \begin{table}[!hpb]
   \centering
-  \bicaption[模型在无交互情况下生成SQL语句的准确性]
-    {模型在无交互情况下生成SQL语句的准确性}
-    {The Accuracy Of Generating SQL Statements Without Interaction}
-  \label{nli:mxzwjhqkxscsyjdzqx}
+  \bicaption[自然语言查询实例]
+    {自然语言查询实例}
+    {Instances Of Natural Qanguage Query}
+  \label{nli:zryycxsl}
   \begin{tabular}{cc} \toprule
     % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-    查询语句复杂度 & 准确率\\\midrule
-    简单 & 65\%\\
-    中等 & 50\%\\
-    困难 & 15\%\\
+    查询语句复杂度 & 示例\\\midrule
+    简单 & return all the custormers\\
+    中等 & return all the offices in London\\
+    困难 & return the city of office that has an employee named Diane\\
+    \midrule
+    简单 & return all the conferences in database area\\
+    中等 & return the number of papers in each database conference\\
+    困难 & return the author who has the most publications in database area\\
     \bottomrule
   \end{tabular}
 \end{table}
 
+表\ref{nli:zryycxsl}给出了三种类别的自然语言查询示例，上半部分为Classicmodels数据集，下半部分为MAS数据集。
+
+\subsection{实验结果}
+
+\begin{table}[!hpb]
+  \centering
+  \bicaption[模型生成SQL语句的准确性]
+    {模型生成SQL语句的准确性}
+    {The Accuracy Of Generating SQL Statements}
+  \label{nli:mxscsyjdzqx}
+  \begin{tabular}{cccc} \toprule
+    % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
+    数据集 & 简单 & 中等 & 困难\\
+    \midrule
+    Classicmodels数据集（无交互）& 65\% & 50\% & 15\% \\
+    Classicmodels数据集（有交互）& 100\% & 80\% & 35\% \\
+    MAS数据集准确率(无交互) & 63\% & 47\% & 29\% \\
+    MAS数据集准确率(有交互) & 100\% & 93\% & 71\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+首先将所有自然语言查询语句，输入系统，经过各组件的处理，得到系统生成的SQL语句，再判断其是否正确表达了自然语言查询语句的意图。
+实验结果如表\ref{nli:mxscsyjdzqx}所示。
+实验检验了没有用户交互和有交互的场景下，模型生成SQL语句的准确性。
+需要说明的是，无论有无交互，在没有选择合适树结构时，导致解析树结构调整之后有多个候选结果，最后返回结果也会有多个，故只要返回结果中包含正确SQL语句，就视做SQL生成正确。
+
+
+
+
 \subsection{实验分析}
 \begin{enumerate}
-    \item 经过两次实验，分别检验完整模型和无交互机制模型生成SQL语句的准确性。可以看出，交互机制对于模型的准确性有很大的提升；而加入了交互机制后，模型可以比较准确的处理简单和中等复杂度的查询意图，即便是复杂度较高的查询意图，本文提出的模型仍然可以正确生成一部分困难复杂度的SQL语句。在实验过程中，经常出现节点歧义需要映射，如“price”一词可以映射到“products”表中的“buyPrice”，也有可能映射到“orderdetails”表中的“priceEach”。那么对于测试语句“return order details whose price is higher than 50”，如果没有交互机制，对于“price”这个节点的映射就会优先映射到“products”中的“buyPrice”，而实际上应该映射到“orderdetails”表中的“priceEach”。可以看出，交互机制在节点映射这一部分准确率的提升，大大影响了整体模型的准确率。
-    \item	在作者构造的自然语句查询意图数据集中，简单复杂度的查询意图大体上是返回某数据表中某一字段，中等复杂度的查询意图会添加一些聚合函数和简单过滤条件，困难复杂度的意图会增加更多的聚合函数和跨表查询，总体上来说结构都比较简单。在表3-5所示的结果中，困难复杂度意图的错误生成情况，一部分来源于查询意图对应的SQL语句需要子查询，如“return the customer who has the most orders”。目前的模型还不能很好的处理这一种情况，在解析树语法和翻译过程中都还没考虑子查询的情况，这可能是接下来需要进一步进行的工作，即提升模型的处理能力，使其能处理更复杂的查询意图。
-    \item	目前模型基于相似度的节点映射机制仍然有不足之处，如“return the mobile number of custormer whose name is Australian Gift Network”这一查询意图，对于顾客名称“Australian Gift Network”，系统会将其映射为三个不同的节点，导致生成出错。尽管模型对于数据库模式中的一些连接词或短语，如“thenumberof”、“customername”，进行了特殊处理，但对于上文所示的这些特殊短语或词语，目前没有较好的方法来进行处理。
+    \item 经过如上实验，分别检验了完整模型在有无交互机制的场景下生成SQL语句的准确性。可以看出，交互机制对于模型的准确性有很大的提升；而加入了交互机制后，模型可以比较准确的处理简单和中等复杂度的查询意图，即便是复杂度较高的查询意图，本文提出的模型仍然可以正确生成一部分困难复杂度的SQL语句。在实验过程中，经常出现节点歧义需要映射，如“price”一词可以映射到“products”表中的“buyPrice”，也有可能映射到“orderdetails”表中的“priceEach”。那么对于测试语句“return order details whose price is higher than 50”，如果没有交互机制，对于“price”这个节点的映射就会优先映射到“products”中的“buyPrice”，而实际上应该映射到“orderdetails”表中的“priceEach”。可以看出，交互机制在节点映射这一部分准确率的提升，大大影响了整体模型的准确率。
+    \item	在Classicmodels数据集上构造的自然语句查询意图数据集中，简单复杂度的查询意图大体上是返回某数据表中某一字段，中等复杂度的查询意图会添加一些聚合函数和简单过滤条件，困难复杂度的意图会增加更多的聚合函数和跨表查询，总体上来说结构都比较简单。在表\ref{nli:mxscsyjdzqx}所示的结果中，困难复杂度意图的错误生成情况，一部分来源于查询意图对应的SQL语句需要子查询，如“return the customer who has the most orders”。目前的模型还不能很好的处理这一种情况，在解析树语法和翻译过程中都还没考虑子查询的情况，这可能是接下来需要进一步进行的工作，即提升模型的处理能力，使其能处理更复杂的查询意图。
+    \item	目前模型基于相似度的节点映射机制仍然有不足之处，如“return the mobile number of custormer whose name is Australian Gift Network”这一查询意图，对于顾客名称“Australian Gift Network”，系统会将其映射为三个不同的节点，导致生成出错。尽管模型对于数据库模式中的一些连接词或短语，如“the number of”、“customer name”，进行了特殊处理，但对于上文所示的这些特殊短语或词语，目前没有较好的方法来进行处理。
     \item	本文自行建立了一个解析树节点类型与自然语言单词的映射词典（表\ref{nli:jxsjddlx}），能处理一些常见的单词与SQL语法的对应关系，如“return”、“in”、“have”、“thenumberof”，但映射关系仍然不足，所以本实验所使用的测试查询意图都需要使用这些比较固定的词语来构建。事实上，自然语言的表达非常多样，如果要增加模型的处理能力，扩充这个映射词典也是非常必要的。
     \item	尽管人机交互机制对于节点映射的准确率有较大提升，但根据观察，立足于目前数据量较小、数据库模式简单的前提下，这一机制能保证映射相似度排名前五的SQL组件包含正确的映射关系；但随着数据库数据量的增加、数据库模式的复杂化，目前节点映射的相似度计算机制，可能无法确保正确的SQL组件能有较高的相似度。
 \end{enumerate}
 
 \section{本章小结}
 本章提出了交互式自然语言接口生成SQL语句模型的设计和具体实现，基本思想是结合自然语言解析技术，使用人机交互的方式指导解析过程，减轻自然语言解析的歧义问题和错误情况，相比于纯自然语言解析技术，大大提升了准确性。
-本章针对自然语言生成SQL模型的准确性进行了实验，实验数据库为MySQL样例数据库classicmodels，测试用自然语言查询意图为作者自行根据实验数据库建立，分别包含简单、中等、困难三种复杂度的查询意图。以此为测试数据集，对完整模型和无交互机制的模型进行了实验，并给出了实验结果。结果发现，完整模型能较好的处理简单和中等复杂度的查询意图，一定程度上能处理困难复杂度的查询意图，而且经过与无交互机制的模型进行对比，发现交互机制对于模型准确度的提升十分显著。但对实验结果进行细致分析，也发现模型存在处理能力仍然不足、无法处理子查询、自然语言意图形式比较固定、无法处理特殊词组等问题，需要进一步进行提升和改进。
+本章针对自然语言生成SQL模型的准确性进行了实验。实验数据为classicmodels数据集和MAS数据集及其对应的自然语言意图数据集，分别包含简单、中等、困难三种复杂度的查询意图。检验了模型在有无交互机制的场景下的性能，并给出了实验结果。结果发现，本章提出的基于映射的INL2SQL的解决方案能出色地处理简单和中等复杂度的查询意图，能够较好的处理困难复杂度的查询意图，并且交互机制对准确度的提升非常显著。
+同时，模型存在无法处理子查询、自然语言意图形式比较固定、无法处理特殊词组等问题，需要进一步进行提升和改进。
 
 
 
