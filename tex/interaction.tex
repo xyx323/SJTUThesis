@@ -90,84 +90,87 @@
 
 \chapter{基于映射的INL2SQL生成}
 \label{chap:interaction}
+本章研究交互式自然语言接口生成SQL 查询语句（INL2SQL）的技术与方法。
+
 \section{研究问题}
 
-一直以来，自然语言接口是人机交互领域的终极追求，也是人机交互、机器学习领域专家孜孜不倦钻研学习的热门问题。
-交互式自然语言接口生成SQL查询语句（INL2SQL）的关键问题就是怎样使得我们的系统能在与用户的多轮交互之下理解到用户的查询意图，并结合数据库直接生成符合查询意图的SQL语句返回给用户。
-其主要过程为：用户首先输入自然语言查询语句以及给出对应的数据库表模式，系统接收到输入后判断输入的正确性并和用户产生多轮交互，在交互完成并确认输出有效后将对应的SQL查询语句及执行结果输出。
+一直以来，自然语言接口是人机交互领域的终极追求，也是人机交互、机器学习领域专家孜孜不倦钻研探索的热门问题。
+交互式自然语言接口生成SQL查询语句（INL2SQL）的关键问题就是怎样使得系统能在与用户的多轮交互之下理解到用户的查询意图，并结合数据库模式直接生成符合查询意图的SQL语句。
+其主要过程为：用户首先输入自然语言查询语句以及给出对应的数据库模式，系统接收到输入后理解输入并和用户产生多轮交互，在交互完成并确认输出后将对应的SQL查询语句及执行结果输出。
+%DONE：上句话中，“确认输出有效”有问题，或者描述不准确
 % 因此，本章将对从自然语言生成SQL语句的技术和模型进行探究，尝试寻找一种解决方案，能提供自然语言接口给非技术用户，让用户通过以自然语言表达的查询意图，得到目标SQL语句。
 
 \begin{figure}[!htp]
   \centering
-  \includegraphics[width=18cm]{example/nli.pdf}
-  \bicaption[基于映射的INL2SQL生成示例]
-    {基于映射的INL2SQL生成示例}
-    {An Example Of Interactive Nature Language To SQL Query Statement With Map}
+  \includegraphics[width=15cm]{example/nli.pdf}
+  \bicaption[INL2SQL生成示例]
+    {INL2SQL生成示例}
+    {An Example of Interactive Nature Language to SQL Query Statement}
   \label{fig:NLI}
 \end{figure}
+%DONE: 上图太大，其字体应小于或等于正文字体，另外，图要加个外框（暂时没找到加框的方法）。
 
-
-
-图\ref{fig:NLI}中给出了基于映射的INL2SQL生成中的典型的例子。
-用户首先输入自然语言查询语句“Return the altitude of Willis Tower in Chicago”以及给出对应的数据库表模式（包含表、列名等）。
-系统判断出两个有效过滤条件即‘Name’=‘Willis Tower ’和‘Location’=‘Chicago’但不确认聚合函数是否为‘SELECT’及其对象是否为‘Height(ft)’。系统返回一个包含{‘Name’=‘Willis Tower ’; ‘Location’=‘Chicago’}和{‘select’=[‘Height(ft)’,’Floor’,’Year’]}的交互项。
-其中{‘Name’=‘Willis Tower ’; ‘Location’=‘Chicago’}为json格式并表示为已经确认的信息，{‘select’=[‘Height(ft)’,’Floor’,’Year’]}为json格式表示需要用户在‘Height(ft)’,’Floor’,’Year’中做出选择。
+图\ref{fig:NLI}中给出了INL2SQL生成的一个示例。
+用户首先输入自然语言查询语句“Return the altitude of Willis Tower in Chicago”。
+系统根据给定的数据库模式，判断出两个有效过滤条件即‘Name’=‘Willis Tower ’和‘Location’=‘Chicago’但不确认聚合函数是否为‘SELECT’及其对象是否为‘Height(ft)’。系统返回一个包含{‘Name’=‘Willis Tower ’; ‘Location’=‘Chicago’}和{‘select’=[‘Height(ft)’,’Floor’,’Year’]}的交互项。
+其中{‘Name’=‘Willis Tower ’; ‘Location’=‘Chicago’}表示为已经确认的信息，{‘select’=[‘Height(ft)’,’Floor’,’Year’]}为json格式表示需要用户在‘Height(ft)’,’Floor’,’Year’中做出选择。
 用户接受到交互信息后进行选择并发送包含{‘select’=‘Height(ft)’}的json数据。
 最后，系统在多轮交互并确认输出有效后将对应的SQL查询语句‘SELECT ‘Height(ft)’ WHERE Name=‘Willis Tower’ AND Location=‘Chicago’及执行结果‘1,451’输出。
-
+%DONE：这是问题定义，故不要出现“json格式”
 % 自然语言理解存在许多难题，如歧义、语序，或者存在复杂的依赖结构等等，要完全基于自然语言理解来进行SQL生成是很困难的，效果可能会不尽如人意。
 % 所以，受到人机交互思想的启发，本文将使用自然语言理解与人机交互相结合的方式，来进行从自然语言到目标SQL语句的转化。
 % 对于自然语言意图，先对自然语言进行初步解析和理解，并在其中插入人机交互机制，让用户来引导生成的过程，指导自然语言理解，纠正机器理解过程中出现的错误、歧义、含糊不清的问题，从而提升整体的准确性。
 
 
 
-\section{相关技术}
-% \subsection{相关技术1}
-% \subsection{相关技术2}
+\section{相关工作}
 在软件产品的开发与使用过程中，非专家用户常常会在指定的关系型数据库上使用关键字搜索\cite{bhalotia2002keyword,yu2010keyword,agrawal2002dbxplorer,hristidis2002discover}来进行实时的查询。
-所以近段时间以来，有很多的研究人员对关键字搜索领域进行研究\cite{tata2008sqak,simitsis2008precis,ganti2010keyword++,blunschi2012soda,bergamaschi2013quest}。
+所以近年以来，有很多的研究人员对关键字搜索领域进行研究\cite{tata2008sqak,simitsis2008precis,ganti2010keyword++,blunschi2012soda,bergamaschi2013quest}。
 关键字搜索的目的不是通过输入的关键字的集合来找到与这些关键字相关联的数据，而是通过这些关键字来推测并解析出其背后想要表达的查询意图及对应的自然语言。
 在这些研究中，有的方法通过聚合函数\cite{tata2008sqak}、布尔运算符\cite{simitsis2008precis}、查询语句片段\cite{blunschi2012soda}等方式对关键字进行拓展。
 现在看来，这些研究内容是解决自然语言查询这一挑战的奠基者。
-本章所提出的解决方案能够支持更加丰富的查询，使得用户可以使用语义更加复杂的语句进行查询。
+本文所提出的解决方案能够支持更加丰富的查询，使得用户可以使用语义更加复杂的语句进行查询。
 
 数据库的自然语言接口（NLIDB）已经被研究人员研究了很长的时间\cite{Androutsopoulos1995Natural}。
 早期的NLIDB需要依靠为每个数据库单独定制的手工语法来进行查询，这些手工语法的拓展性很差，很难在其他数据库中进行使用。
-相比之下，本章所提出的解决方案以生成SQL查询语句作为目的，具有很好的通用性，可以被移植到其他的数据库上使用。
+相比之下，本文所提出的解决方案以生成SQL查询语句作为目的，具有很好的通用性，可以被移植到其他的数据库上使用。
  
-如\cite{popescu2003towards}所指出，NLIDB在使用上最大的问题在于其所依赖的信息很有限，正常的自然语言往往是没有一个固定的格式和语义。
+NLIDB在使用上最大的问题在于其所依赖的信息很有限，正常的自然语言往往是没有一个固定的格式和语义\cite{popescu2003towards}。
 这也就导致了NLIDB无法准确地推断用户输入的查询意图。
-为了解决可靠性的问题，\cite{popescu2003towards,popescu2004modern}等人采用了PRECISE方法，将输入的自然语言查询划分为语义更加容易被解析的查询片段，并将这些查询片段更为精确地转换为SQL查询语句。
+为了解决可靠性的问题，Popescu等人\cite{popescu2003towards,popescu2004modern}采用了PRECISE方法，将输入的自然语言查询划分为语义更加容易被解析的查询片段，并将这些查询片段更为精确地转换为SQL查询语句。
+%done：把第一作者的名字要列出来
 但是，PRECISE无法处理那些语义不确切或者难以处理的自然语言查询。
-相比而言，本章提出的解决方案通过与用户的多轮交互，可以较好地解决语义不明确的问题。
+相比而言，本文提出的解决方案通过与用户的多轮交互，可以较好地解决语义不明确的问题。
 
 也有很多文献\cite{Androutsopoulos1995Natural,kuepper1993nauda,li2005nalix}提出过交互式NLIDB的想法，早期交互式NLIDB\cite{Androutsopoulos1995Natural,kuepper1993nauda}主要目标在于从查询生成对应的结果。
 而NaLIX\cite{li2005nalix}则更进一步，当用户的查询超出模型的语义理解能力的范围之外时会把相应的重构查询的建议返回给用户，这种策略会大大减少用户在使用时对其查询进行重构的负担。
 然而，NaLIX对输入的查询超过模型的语义理解能力的处理方式不太正确。
-而在本章提出的解决方案中，对于给定的自然语言查询语句，我们会与用户多轮交互并向用户解释我们解析的过程以及生成SQL的过程，从而对查询进行重构，解决起义问题。
-所以，在与用户的多轮反馈与交互下，用户在使用我们的系统时可以放心地输入较为复杂的查询，其生成的SQL查询语句可以包含多级聚合操作、嵌套以及各种类型的连接操作等。
-
-总而言之，本章提出的解决方案具有较好的通用性，能够解决语义不明确的问题，可以通过与用户的多轮交互向用户解释我们解析的过程以及生成SQL的过程从而对查询进行重构。
+而在本文提出的解决方案中，对于给定的自然语言查询语句，系统会与用户多轮交互并向用户解释意图解析与SQL生成的过程，从而对查询进行重构，解决歧义问题。
+所以，在与用户的多轮反馈与交互下，用户可以输入较为复杂的查询，其生成的SQL查询语句可以包含多级聚合操作、嵌套以及各种类型的连接操作等。
 
 \section{解决方案}
 \begin{figure}[!htp]
     \centering
     \includegraphics[width=15cm]{example/NLIapproach.pdf}
     \bicaption[基于映射的INL2SQL生成的总体方案]
-      {基于映射的INL2SQL生成的总体方案}
-      {An Overview Of Interactive Nature Language To SQL Query Statement With Map}
+      {基于映射的INL2SQL生成的解决方案}
+      {Approach on Interactive Nature Language to SQL Query Statement through Mapping}
     \label{fig:NLIapproach}
   \end{figure}
-图\ref{fig:NLIapproach}是基于映射的INL2SQL生成的总体方案，它包含依赖解析树生成、解析树节点映射、解析树优化重构、查询树翻译、意图交互五个模块：
+%DONE：业务数据库出来的那条线上画上“数据库模式”
+%DONE：上图的前后留空太多
+图\ref{fig:NLIapproach}是基于映射的INL2SQL生成的解决方案，它包含依赖解析树生成、解析树节点映射、解析树优化重构、查询树翻译、意图交互五个模块：
 \begin{enumerate}
     % \item 用户接口：用户与系统进行交互的接口，包括输入自然语言、返回SQL语句、解析过程中的交互等等。
-    \item 依赖解析树生成：将用户输入的，以自然语言表示的查询意图，应用自然语言理解技术，转化为依赖解析树，即将词语进行词性标注，以及识别出词语之间的关系，并将其组织成一个树状结构。详见\ref{nli:yljxssc}节。
-    \item 解析树节点映射：根据解析树节点对应的词语和数据库元数据、数据、SQL语法等信息，将解析树节点映射为SQL语法组件。
+    \item 依赖解析树生成：将用户输入的、以自然语言表示的查询意图，应用自然语言理解技术，转化为依赖解析树，即将词语进行词性标注，识别出词语之间的关系，并将其组织成一个树状结构。详见\ref{nli:yljxssc}节。
+    \item 解析树节点映射：根据解析树节点对应的词语和数据库模式、SQL语法等信息，将解析树节点映射为SQL语法组件。
 在这个过程中，如果节点的映射有多个候选答案，意图交互模块会发起与用户的交互，将多个候选映射展示给用户，让用户来进行选择。详见\ref{nli:jxsjdys}节。
-    \item 意图交互：管理解析过程与用户的交互，在适当的时候与用户进行交互，让用户对解析过程进行指导。
+%DONE：“数据”？有数据库数据吗？
+    \item 意图交互：管理解析过程与用户的交互，在适当的时候与用户进行交互，让用户对解析过程进行反馈与指导。
     \item 解析树优化重构：节点映射完毕后，解析树节点经过系统匹配和用户指导后，得到了比较准确的结果，但解析树的结构仍是最初由依赖解析树生成得到的结构，这一原始结构的准确度并不高，受限于自然语言的复杂性和省略性，可能会有错误关系、缺失关系、缺失节点等等。
-为了使解析树能得到比较准确的结构，将设计算法和规则，修正错误关系，补全缺失节点和缺失关系，得到较为准确的解析树，称为查询树。详见\ref{nli:jxsyhcg}节。
-    \item 查询树翻译：解析树的结构已经符合SQL语法，节点映射结果也对应于真实的SQL语法、数据库schema或数据，可以很自然地将树状结构的翻译为SQL语句，最后将SQL语句及查询结果返回给用户。详见\ref{nli:cxsfy}节。
+因此系统将根据算法和规则，修正错误关系，补全缺失节点和缺失关系，得到较为准确的解析树，称为查询树。详见\ref{nli:jxsyhcg}节。
+    \item 查询树翻译：解析树的结构已经符合SQL语法，节点映射结果也对应于真实的SQL语法、数据库模式或数据，可以很自然地将树状结构翻译为SQL语句，最后将SQL语句（及查询结果）返回给用户。详见\ref{nli:cxsfy}节。
+    %DONE：查询结果返回给用户吗？在解决方案的图中没有这个信息
 \end{enumerate}
 
 \begin{figure}[!htp]
@@ -175,26 +178,26 @@
   \includegraphics[width=13cm]{example/NLIschema.pdf}
   \bicaption[查询示例及其图模式]
     {查询示例及其图模式}
-    {Query Examples And Graph Schema}
+    {Query Examples and Graph Schema}
   \label{fig:NLIschema}
 \end{figure}
 
 需要特别说明的是，一般的搜索引擎提供的方案或者之前的NLIDB的方案所产生的结果通常无法解释。
 例如，假设用户的输入是图\ref{fig:NLIschema}中的输入1，使用之前的方案可以得到结果为数字5，而用户无法知道这个答案是否是正确的；
 除此之外，由于自然语言的表达十分复杂，用户的输入可能是模棱两可的。
-例如，假设用户的输入是图\ref{fig:NLIschema}中的输入1，查询语句中所使用的单词是“publication”，而在业务数据库中，“publication”再数据库中对应的可能是表中的“article”，“journal”等等字段。
-因此，在基于映射的INL2SQL中，我们并不是直接产生查询的结果，而是向用户解释解析的过程，并通过多轮的交互修复解析中产生的“歧义”问题。
+例如，假设用户的输入是图\ref{fig:NLIschema}中的输入1，查询语句中所使用的单词是“publication”，而在业务数据库中，“publication”在数据库中对应的可能是表中的“article”，“journal”等字段。
+因此，在基于映射的INL2SQL中，本文并不是直接产生查询的结果，而是向用户解释解析的过程，并通过多轮的交互修复解析中产生的“歧义”问题。
 
 \begin{figure}[!htp]
   \centering
   \includegraphics[width=13cm]{example/NLIexample.pdf}
   \bicaption[解析过程示例]
     {解析过程示例}
-    {Steps Of Parsing}
+    {Example of Parsing Process}
   \label{fig:NLIexample}
 \end{figure}
 
-在此，我们先给出基于映射的INL2SQL生成的整个解析过程的示例（如图\ref{fig:NLIexample}所示），再对解决方案中的每个模块进行详细介绍。
+在此，先给出基于映射的INL2SQL生成的整个解析过程的示例（如图\ref{fig:NLIexample}所示），再对解决方案中的每个模块进行详细阐述。
 第一步，通过依赖解析树生成模块，系统将用户的自然语言查询输入（图\ref{fig:NLIschema}中的输入2）转换为一颗简单的语法解析树（图\ref{fig:NLIexample}(1)）。
 第二步，解析树节点映射模块为解析树种的每个节点生成一个最佳映射（图\ref{fig:NLIexample}(2)），并通过意图交互模块向用户通知“VLDB”节点在数据库模式中可以映射为“conference”和"journal"而系统选择了“conference”作为其默认映射。
 第三步，解析树优化重构模块将根据最佳映射对解析树进行重构和调整，生成k个有效的解析树。同时，意图交互模块会结合自然语言模板将这k个候选的解析树告知用户并让用户进行选择，例如：“return the authors, where the papers of the author in VLDB after 2000 is more than Bob”。被选择的最佳的解析树如图\ref{fig:NLIexample}(3)。
@@ -373,7 +376,7 @@ Stanford Parser是斯坦福大学推出的自然语言处理工具，提供依�
   \includegraphics[width=13cm]{example/NLIimplicit.pdf}
   \bicaption[隐藏节点插入过程示例]
     {隐藏节点插入过程示例}
-    {Steps Of Parsing}
+    {Steps of Parsing}
   \label{fig:NLIimplicit}
 \end{figure}
 
@@ -406,6 +409,16 @@ Stanford Parser是斯坦福大学推出的自然语言处理工具，提供依�
 \end{enumerate}
 
 \section{实验与分析}
+%DONE: 在此要写出实验目的，有必要时可以列出RQ（研究问题），后续在实验分析时对各个RQ进行讨论与回答
+本节是基于映射的INL2SQL解决方案的实验部分，将介绍实验所使用的评价指标和数据集并对实验结果进行分析，验证了方法的有效性和准确性。
+\subsection{评价指标}
+%done: 在此要写出SQL语句生成的准确性度量指标
+INL2SQL的目标是尽可能让使用者使用更加自然的自然语言的方式来生成SQL查询语句，如何评价INL2SQL系统的有效性是其中比较有挑战的问题。
+在此背景下，传统的信息检索所使用的指标（如精确度和召回度）不太适用与这个场景。
+例如，当生成的SQL语句有效时，精确度为100\%；而当生成的SQL不完全有效时，得到的精确度往往为0\%，这不能很好的显示出系统的有效性。
+因此，本节中所使用的评价指标为输入的查询语句经过多轮交互后完美符合用户期望的比例，即在最后一次交互时用户确认生成有效时记为正确生成，用户在任意时刻认为SQL生成无效时记为错误生成。
+需要说明的时，即使最后生成的SQL语句与标准答案高度一致但用户认为此次生成无效时，我们也会认为是一次错误生成。
+因此，该评价指标是更为严格的。
 
 \subsection{数据集}
 
@@ -455,22 +468,23 @@ MAS数据集中的每个类别有100条自然语言查询，共计300条，用�
   \centering
   \bicaption[自然语言查询实例]
     {自然语言查询实例}
-    {Instances Of Natural Qanguage Query}
+    {Instances of Natural Qanguage Query}
   \label{nli:zryycxsl}
   \begin{tabular}{cc} \toprule
     % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-    查询语句复杂度 & 示例\\\midrule
+    查询语句复杂度 & Classicmodels数据集\\\midrule
     简单 & return all the custormers\\
     中等 & return all the offices in London\\
     困难 & return the city of office that has an employee named Diane\\
     \midrule
+    查询语句复杂度 & MAS数据集\\\midrule
     简单 & return all the conferences in database area\\
     中等 & return the number of papers in each database conference\\
     困难 & return the author who has the most publications in database area\\
     \bottomrule
   \end{tabular}
 \end{table}
-
+%DONE：上表中增加一列“数据集”，指明是Classicmodels 数据集或MAS 数据集。
 表\ref{nli:zryycxsl}给出了三种类别的自然语言查询示例，上半部分为Classicmodels数据集，下半部分为MAS数据集。
 
 \subsection{实验结果}
@@ -479,7 +493,7 @@ MAS数据集中的每个类别有100条自然语言查询，共计300条，用�
   \centering
   \bicaption[模型生成SQL语句的准确性]
     {模型生成SQL语句的准确性}
-    {The Accuracy Of Generating SQL Statements}
+    {The Accuracy of Generating SQL Statements}
   \label{nli:mxscsyjdzqx}
   \begin{tabular}{cccc} \toprule
     % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
@@ -511,9 +525,9 @@ MAS数据集中的每个类别有100条自然语言查询，共计300条，用�
 \end{enumerate}
 
 \section{本章小结}
-本章提出了交互式自然语言接口生成SQL语句模型的设计和具体实现，基本思想是结合自然语言解析技术，使用人机交互的方式指导解析过程，减轻自然语言解析的歧义问题和错误情况，相比于纯自然语言解析技术，大大提升了准确性。
-本章针对自然语言生成SQL模型的准确性进行了实验。实验数据为classicmodels数据集和MAS数据集及其对应的自然语言意图数据集，分别包含简单、中等、困难三种复杂度的查询意图。检验了模型在有无交互机制的场景下的性能，并给出了实验结果。结果发现，本章提出的基于映射的INL2SQL的解决方案能出色地处理简单和中等复杂度的查询意图，能够较好的处理困难复杂度的查询意图，并且交互机制对准确度的提升非常显著。
-同时，模型存在无法处理子查询、自然语言意图形式比较固定、无法处理特殊词组等问题，需要进一步进行提升和改进。
+本章提出了交互式自然语言接口生成SQL语句的方法与技术，基本思想是结合自然语言解析技术，使用人机交互的方式指导解析过程，减轻自然语言解析的歧义问题和错误情况，相比于纯自然语言解析技术，大大提升了准确性。
+本章针对自然语言生成SQL语句的方法的准确性进行了实验。实验数据为classicmodels数据集和MAS数据集及其对应的自然语言意图数据集，分别包含简单、中等、困难三种复杂度的查询意图。评估了本方法在有无交互机制的场景下的性能，并给出了实验结果。结果发现，本方法能出色地处理简单和中等复杂度的查询意图，能够较好地处理困难复杂度的查询意图，并且交互机制对准确度的提升非常显著。
+但本方法存在无法处理子查询、自然语言意图形式比较固定、无法处理特殊词组等问题，需要进一步进行提升和改进。
 
 
 
