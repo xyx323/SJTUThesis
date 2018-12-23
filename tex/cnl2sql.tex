@@ -11,24 +11,25 @@
 
 \chapter{基于多任务学习的NL2SQL生成}
 \label{chap:cnl2sql}
+本章基于多任务学习技术，研究并提出了自然语言生成 SQL 查询语句（NL2SQL）的方法。
 
 \section{研究问题}
 
-在第\ref{chap:enl2sql}章中，我们结合了深度学习与深度强化学习来解决NL2SQL的问题。
-但是，目前的所有研究都只是将英文的自然语言问题转换为机器可执行的SQL查询语句，而没有涉及到其他语种的自然语言。
-在本章中，我们主要的研究问题就是研究如何进一步提升NL2SQL任务中英文自然语言生成SQL查询语句的准确性以及如何同时解决中文自然语言问题转换为SQL查询语句的问题。
+在第\ref{chap:enl2sql}章中，本文结合了深度学习与深度强化学习来解决NL2SQL的问题。
+然而，目前的所有研究都只是将英文的自然语言问题转换为机器可执行的SQL查询语句，而没有涉及到其他语种的自然语言。
+本章的主要研究问题就是研究如何进一步提升NL2SQL任务中英文自然语言生成SQL查询语句的准确性以及如何同时解决中文自然语言问题转换为SQL查询语句的问题。
 其中最具挑战的地方就是怎样将中文自然语言转换为英文自然语言的任务与英文自然语言生成SQL查询语句有机地结合起来。
 
 基于多任务学习的NL2SQL生成的模型的总输入表示为$x$，其包含由单词$w_{i}$组成的自然语言问题$w$以及由列名$c_{j}$组成的数据库单张表的模式 $c$（其中，列名$c_{j}$可由单个或多个单词组成）。
 模型的输出为一条可执行的SQL查询语句$y$以及其在数据库中执行的结果$r$。
-我们通过给出NL2SQL任务中一个典型的例子（如图\ref{fig:nl2sqlexample}所示）来进一步说明。
+通过给出NL2SQL任务中一个典型的例子（如图\ref{fig:nl2sqlexample}所示）来进一步说明。
 
 \begin{figure}[!htp]
     \centering
-    \includegraphics[width=17cm]{example/cnl2sql.pdf}
+    \includegraphics[width=15cm]{example/cnl2sql.pdf}
     \bicaption[中文自然语言问题生成SQL查询语句的示例]
       {中文自然语言问题生成SQL查询语句的示例}
-      {An Example Of Chinese Nature Language To SQL Statement}
+      {An Example of Chinese Nature Language To SQL Statement}
     \label{fig:cnl2sqlexample}
   \end{figure}
 
@@ -126,7 +127,7 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
 
 \section{解决方案}
 
-在本节中，我们会先介绍如何把中文自然语言翻译为英文自然语言任务与英文自然语言生成SQL查询语句任务进行统一，之后提出一种基于多任务学习的神经网络结构并解释说明为何这样的网络结构可以有效地解决中文自然语言问题生成SQL查询语句问题。
+本节先提出将中文自然语言翻译为英文自然语言任务与英文自然语言生成SQL查询语句任务进行统一的方法，之后提出一种基于多任务学习的神经网络结构并解释说明为何这样的网络结构可以有效地解决中文自然语言问题生成SQL查询语句问题。
 
 \subsection{TCR模板}
 
@@ -137,10 +138,10 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
 
 \begin{figure}[!htp]
     \centering
-    \includegraphics[width=17cm]{example/cnl2sqlproblem.pdf}
+    \includegraphics[width=15cm]{example/cnl2sqlproblem.pdf}
     \bicaption[中文自然语言问题生成SQL查询语句的错误示例]
       {中文自然语言问题生成SQL查询语句的错误示例}
-      {An Error Example Of Chinese Nature Language To SQL Statement}
+      {An Error Example of Chinese Nature Language To SQL Statement}
     \label{fig:cnl2sqlproblem}
   \end{figure}
 
@@ -149,38 +150,38 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
 形如这一类的问题会给SQL的生成带来很大的问题。
 
 究其原因，从中文自然语言到英文自然语言再到SQL查询语句这一过程是一个紧密关联的过程，如果将其拆分为两个部分，则翻译的过程中将会丢失大量的数据库、SQL语言本身的很多信息。
-所以，我们提出TCR模板用以将这两个独立的任务有机的统一起来，并在作为下节中的多任务学习网络的输入。
+所以，本文提出TCR模板用以将这两个独立的任务有机的统一起来，并在作为下节中的多任务学习网络的输入。
 
 \begin{figure}[!htp]
     \centering
-    \includegraphics[width=17cm]{example/tcr.pdf}
+    \includegraphics[width=15cm]{example/tcr.pdf}
     \bicaption[TCR模板]
       {TCR模板（任务-内容-结果模板）}
       {TCR Template}
     \label{fig:cnl2sqltcr}
   \end{figure}
 
-如图\ref{fig:cnl2sqltcr}所示，我们将中文自然语言翻译为英文自然语言任务和英文自然语言生成SQL查询语句任务使用TCR模板（任务-内容-结果）进行统一。
+如图\ref{fig:cnl2sqltcr}所示，本文将中文自然语言翻译为英文自然语言任务和英文自然语言生成SQL查询语句任务使用TCR模板（任务-内容-结果）进行统一。
 例如，“告诉我南澳有哪些注意要点”先翻译为英文，其任务为“What is the translation from Chinese to English?”（意为需要执行的任务是中文到英文的翻译），内容为“告诉我南澳有哪些注意要点”（指在表明所需要翻译的中文自然语句是什么），结果为“Tell me what the notes are for South Australia”。
 而后再将“Tell me what the notes are for South Australia”转换为SQL查询语句，其任务为“What is the translation from English to SQL?”（意为需要执行的任务是英文到SQL的生成），内容为“The table has column names… Tell me what the notes are for South Australia”（指在表明所需的信息由表的列名以及英文自然语言的查询构成），结果为“SELECT notes from table WHERE ‘Current Slogan’ =‘South Australia”，从而完成生成的全过程。
 
 TCR模板将两个任务的模式进行了统一，使得网络模型的输入和输出得以一致，而不用设计两个不同的网络结构来处理这两个任务。
-在后文中，我们还将这个模板用于自然语言处理领域中的很多任务，详见\ref{cnl2sql:syyfx}节。
+在后文中，本文还将这个模板用于自然语言处理领域中的很多任务，详见\ref{cnl2sql:syyfx}节。
 
 \subsection{多任务网络}
 
-由于我们会使用TCR模板对每个任务进行统一并且在训练阶段采用联合训练的方法，我们把所使用的神经网络的结构称为多任务网络，如图\ref{fig:cnl2sqlnet}所示。
-近几年来，有许多研究者所研究的问答模型的和我们的模型比较类似，但是通常的问答模型往往假设模型得到的答案的片段是可以直接从上下文信息中复制，但是我们的多任务网络适用于更一般的问答场景。
+由于使用TCR模板对每个任务进行统一并且在训练阶段采用联合训练的方法，本文把所使用的神经网络的结构称为多任务网络，如图\ref{fig:cnl2sqlnet}所示。
+近几年来，有许多研究者所研究的问答模型的和本文提出的模型较为类似，但是通常的问答模型往往假设模型得到的答案的片段是可以直接从上下文信息中复制，但是本文提出的多任务网络适用于更一般的问答场景。
 在之前的TCR模板中，任务对应于问答模型中的问题，内容对应于问答模型中的上下文，而结果对应于问答模型中的回答。
-由于TCR模板中的任务往往包含限制搜索空间的非常关键的信息，我们会在多任务网络中使用了协同注意力机制\cite{vaswani2017attention}并加以拓展，从而使得对模型输入的表示更加丰富。
+由于TCR模板中的任务往往包含限制搜索空间的非常关键的信息，本文会在多任务网络中使用了协同注意力机制\cite{vaswani2017attention}并加以拓展，从而使得对模型输入的表示更加丰富。
 此外，多任务网络还采用了指针机制\cite{vinyals2015pointer}，并将其改造为分层的多指针生成器，使得网络能够直接从任务和内容中进行文本的复制。
 
 \begin{figure}[!htp]
   \centering
-  \includegraphics[width=17cm]{example/cnl2sqlnet.pdf}
+  \includegraphics[width=15cm]{example/cnl2sqlnet.pdf}
   \bicaption[多任务网络结构]
     {多任务网络结构}
-    {The Architecture Of Multitasking Network}
+    {The Architecture of Multitasking Network}
   \label{fig:cnl2sqlnet}
 \end{figure}
 
@@ -192,7 +193,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
     C \in \mathbb{R}^{l \times d_{emb}} \qquad Q \in \mathbb{R}^{m \times d_{emb}} \qquad A \in \mathbb{R}^{n \times d_{emb}}
   \end{equation}
 
-接下来，我们将分别详细介绍多任务网络中的编码器和解码器。
+接下来，本文将分别详细阐述多任务网络中的编码器和解码器。
 
 \subsection{编码器}
 \label{cnl2sql:encoder}
@@ -201,7 +202,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 使用深度栈式循环神经网络，结合协同注意力机制(coattention)和自注意力机制(self-attention),
 来生成编码阶段的最终的表示$C_{fin} \in \mathbb{R}^{l \times d}$和$Q_{fin} \in \mathbb{R}^{m \times d}$（即编码之后的内容信息和任务信息），
 并且还可以让网络学习到他们之间的局部和全局的相互依赖关系。
-在下文中，我们将对编码器的每个阶段进行进一步的说明。
+在下文中，将对编码器的每个阶段进行进一步的说明。
 
 \textbf{单独编码阶段}
 
@@ -218,12 +219,12 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \textbf{对准阶段}
 
-在获得协同注意力的表达之前，我们需要先对每个序列的编码表达进行对准。
-我们会分别给$C_{ind}$和$Q_{ind}$增加一个预训练的嵌入使得现在的$C_{ind} \in \mathbb{R}^{(l+1) \times d}$以及$Q_{ind} \in \mathbb{R}^{(m+1) \times d}$，
+在获得协同注意力的表达之前，需要先对每个序列的编码表达进行对准。
+我分别给$C_{ind}$和$Q_{ind}$增加一个预训练的嵌入使得现在的$C_{ind} \in \mathbb{R}^{(l+1) \times d}$以及$Q_{ind} \in \mathbb{R}^{(m+1) \times d}$，
 这样做可以让每个单词不会和序列中的某个单词强制对准。
 
 令$softmax(X)$表示逐列进行softmax操作，即矩阵$X$中的每列进行标准化后的和为1。
-我们将内容信息的序列表示与任务序列表示之间进行点积计算得到相似性得分，并使用归一化操作来获得数据的对准，如公式\ref{cnl2sqleq:encoder3}：
+本文将内容信息的序列表示与任务序列表示之间进行点积计算得到相似性得分，并使用归一化操作来获得数据的对准，如公式\ref{cnl2sqleq:encoder3}：
 \begin{equation}
   \label{cnl2sqleq:encoder3}
   softmax(C_{ind}Q_{ind}^{\top}) = S_{cq} \in \mathbb{R}^{(l+1) \times (m+1)} \qquad softmax(Q_{ind}C_{ind}^{\top}) = S_{qc} \in \mathbb{R}^{(m+1) \times (l+1)}
@@ -231,7 +232,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \textbf{对偶协同注意力阶段}
 
-再对准之后，我们要去计算一个序列中的某个单词和另一个序列中相关的单词的加权求和，如公式\ref{cnl2sqleq:encoder4}。
+再对准之后，要去计算一个序列中的某个单词和另一个序列中相关的单词的加权求和，如公式\ref{cnl2sqleq:encoder4}。
 \begin{equation}
   \label{cnl2sqleq:encoder4}
   S_{cq}^{\top}C_{ind} = C_{sum} \in \mathbb{R}^{(m+1) \times d} \qquad S_{qc}^{\top}Q_{ind} = Q_{sum} \in \mathbb{R}^{(l+1) \times d}
@@ -243,12 +244,12 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   S_{qc}^{\top}C_{sum} = C_{coa} \in \mathbb{R}^{(l+1) \times d} \qquad S_{cq}^{\top}Q_{sum} = Q_{coa} \in \mathbb{R}^{(m+1) \times d}
 \end{equation}
 
-可以发现，进行了加权求和和协同注意力的表示中的第一列为之前我们添加进去的冗余的嵌入。
-在这里我们不再需要这一个嵌入，所以将矩阵中的这一列去除掉，得到$C_{coa} \in \mathbb{R}^{l \times d}$和$Q_{coa} \in \mathbb{R}^{m \times d}$。
+可以发现，进行了加权求和和协同注意力的表示中的第一列为之前添加进去的冗余的嵌入。
+在这里不再需要这一个嵌入，所以将矩阵中的这一列去除掉，得到$C_{coa} \in \mathbb{R}^{l \times d}$和$Q_{coa} \in \mathbb{R}^{m \times d}$。
 
 \textbf{压缩阶段}
 
-为了将对偶协同注意力操作之前的信息压缩至$d$维，我们接着把之前得到的四种序列表示进行拼接并输入一个单独的双向LSTM中，如公式\ref{cnl2sqleq:encoder6}。
+为了将对偶协同注意力操作之前的信息压缩至$d$维，接着把之前得到的四种序列表示进行拼接并输入一个单独的双向LSTM中，如公式\ref{cnl2sqleq:encoder6}。
 \begin{align}
   \label{cnl2sqleq:encoder6}
   BiLSTM_{comC}([C_{proj};C_{ind};Q_{sum};C_{coa}]) =  C_{com} \in \mathbb{R}^{m \times d}\\
@@ -257,7 +258,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \textbf{自注意力阶段}
 
-接着，我们使用一个多头的放缩点积注意力机制（multi-head, scaled dot-product attention）\cite{vaswani2017attention}来捕获每个序列内部的长距离的依赖性，其表达式为公式\ref{cnl2sqleq:encoder7}。
+接着，使用一个多头的放缩点积注意力机制（multi-head, scaled dot-product attention）\cite{vaswani2017attention}来捕获每个序列内部的长距离的依赖性，其表达式为公式\ref{cnl2sqleq:encoder7}。
 
 \begin{gather}
   \label{cnl2sqleq:encoder7}
@@ -271,7 +272,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   MultiHead_C(C_{com},C_{com},C_{com}) = C_{mha} \qquad MultiHead_Q(Q_{com},Q_{com},Q_{com}) = Q_{mha}
  \end{equation}
 
-之后，我们使用了一个残差前馈网络（feedforward networks，简称FFN）如公式\ref{cnl2sqleq:encoder9}，其中$U \in \mathbb{R}^{d \times f}$，$V \in \mathbb{R}^{f \times d}$。其激活函数为Relu函数\cite{Nair2010Rectified,vaswani2017attention}，并且在输入和输出都使用了正则化(layer normalization)\cite{Ba2016Layer}。
+之后，本文使用了一个残差前馈网络（feedforward networks，简称FFN）如公式\ref{cnl2sqleq:encoder9}，其中$U \in \mathbb{R}^{d \times f}$，$V \in \mathbb{R}^{f \times d}$。其激活函数为Relu函数\cite{Nair2010Rectified,vaswani2017attention}，并且在输入和输出都使用了正则化(layer normalization)\cite{Ba2016Layer}。
 \begin{gather}
   \label{cnl2sqleq:encoder9}
   FFN(X) = \max(0,XU)V + X\\
@@ -280,7 +281,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \textbf{最终编码阶段}
 
-最后，我们使用两个双向LSTM将所有信息进行汇总并将矩阵$C_{fin}$和$Q_{fin}$输入给解码器，如公式\ref{cnl2sqleq:encoder10}。
+最后，使用两个双向LSTM将所有信息进行汇总并将矩阵$C_{fin}$和$Q_{fin}$输入给解码器，如公式\ref{cnl2sqleq:encoder10}。
 \begin{equation}
   \label{cnl2sqleq:encoder10}
   BiLSTM_{finC}(C_{self}) = C_{fin} \in \mathbb{R}^{l \times d} \qquad BiLSTM_{finQ}(Q_{self}) = Q_{fin} \in \mathbb{R}^{m \times d} 
@@ -291,7 +292,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \label{cnl2sql:decoder}
 
 在编码器得到最终的表示$C_{fin} \in \mathbb{R}^{l \times d}$和$Q_{fin} \in \mathbb{R}^{m \times d}$（即编码之后的内容信息和任务信息）后进入到解码器解码。
-在下文中，我们将对解码器的每个阶段进行进一步的说明。
+在下文中，将对解码器的每个阶段进行进一步的说明。
 
 \textbf{结果表示阶段}
 
@@ -303,7 +304,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \end{equation}
 
 之后紧接的是一个自注意力层，该注意力层与编码器中的自注意力层相对应。
-由于该过程不包含循环和卷积操作，所以我们为$A_{proj}$加上了一个位置编码信息$x$，如公式\ref{cnl2sqleq:decoder2}。
+由于该过程不包含循环和卷积操作，所以为$A_{proj}$加上了一个位置编码信息$x$，如公式\ref{cnl2sqleq:decoder2}。
 \begin{equation}
   \label{cnl2sqleq:decoder2}
   A_{proj} + PE = A_{ppr} \in \mathbb{R}^{n \times d},\qquad \mbox{其中} PE[t,k] = \{   
@@ -314,7 +315,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \end{equation}
 
 \textbf{自注意力阶段}
-接着我们使用了自注意力机制\cite{vaswani2017attention}从而使得解码器能够知道之前的输出（若之前没有输出则认为之前的输出为某个初始化的单词）和相关内容是什么，从而产生下一个输出。
+接着使用自注意力机制\cite{vaswani2017attention}从而使得解码器能够知道之前的输出（若之前没有输出则认为之前的输出为某个初始化的单词）和相关内容是什么，从而产生下一个输出。
 在多头的注意力机制之后使用了一个残差前馈网络（FFN，其定义在\ref{cnl2sql:encoder}节中的自注意力阶段给出），如公式\ref{cnl2sqleq:decoder3}。
 
 \begin{gather}
@@ -326,7 +327,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \textbf{获得中间状态阶段}
 
-之后，我们使用了一个标准的带注意力机制的LSTM网络来对每个时刻$t$产生一个内容状态$\widetilde{c}_t$。
+之后，使用一个标准的带注意力机制的LSTM网络来对每个时刻$t$产生一个内容状态$\widetilde{c}_t$。
 这个LSTM又将使用之前的结果序列中的单词$A^{t-1}_{self}$和内容状态来生成一个中间状态$h_t$，如公式\ref{cnl2sqleq:decoder4}。
 
 \begin{equation}
@@ -336,7 +337,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \textbf{任务与内容注意力阶段}
 
-上一阶段中的中间状态可用来获得注意力权重$\alpha^C_t$以及$\alpha^Q_t$Q，解码器从而可以获得$t$时刻的编码信息，如公式\ref{cnl2sqleq:decoder5}。
+上一阶段中的中间状态可用来获得注意力权重$\alpha^C_t$以及$\alpha^Q_t$，解码器从而可以获得$t$时刻的编码信息，如公式\ref{cnl2sqleq:decoder5}。
 
 \begin{equation}
   \label{cnl2sqleq:decoder5}
@@ -353,8 +354,8 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \textbf{多指针生成阶段}
 
-由于我们的模型必须要能够生成那些未出现在任务或内容序列中的单词，所以需要额外声明一个词汇表$v$。
-我们会从任务、内容和外部的词汇表中分别获得每个单词的概率分布，如公式\ref{cnl2sqleq:decoder7}。
+由于本文的模型必须要能够生成那些未出现在任务或内容序列中的单词，所以需要额外声明一个词汇表$v$。
+从任务、内容和外部的词汇表中分别获得每个单词的概率分布，如公式\ref{cnl2sqleq:decoder7}。
 
 \begin{gather}
   \label{cnl2sqleq:decoder7}
@@ -363,8 +364,8 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   softmax(W_v\widetilde{c}_t) = p_v(w_t) \in \mathbb{R}^{v}
 \end{gather}
 
-这些概率分布将会覆盖任务、内容和外部词汇表中所有单词的集合，其中却是的一些条目将会被赋为0值从而使所有分布都在$\mathbb{R}^{l+m+v}$。
-最后，我们设置两个标量开关来调节每个分布的重要程度并确认最终输出的分布，如公式\ref{cnl2sqleq:decoder8}。
+这些概率分布将会覆盖任务、内容和外部词汇表中所有单词的集合，其中的一些条目将会被赋为0值从而使所有分布都在$\mathbb{R}^{l+m+v}$。
+最后，本文设置两个标量开关来调节每个分布的重要程度并确认最终输出的分布，如公式\ref{cnl2sqleq:decoder8}。
 \begin{gather}
   \label{cnl2sqleq:decoder8}
   \sigma (W_{pv}[\widetilde{c}_t;h_t;(A_{self})_{t-1}]) = \gamma \in [0,1]\\
@@ -372,7 +373,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   \gamma p_v(w_t) + (1 - \gamma)[\lambda p_c(w_t) + (1 - \lambda)p_q(w_t)] = p(w_t) \in \mathbb{R}^{l+m+v}
 \end{gather}
 
-需要说明的是，在训练的全时域中，我们采用的是单词级别的对数似然损失，如公式\ref{cnl2sqleq:decoder9}。
+需要说明的是，在训练的全时域中，本文采用的是单词级别的对数似然损失，如公式\ref{cnl2sqleq:decoder9}。
 
 \begin{equation}
   \label{cnl2sqleq:decoder9}
@@ -387,7 +388,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \begin{table}[!htpb]
   \bicaption[多任务网络的实验结果]
     {多任务网络的实验结果}
-    {The Experiment Result Of Multitasking Network}
+    {The Experiment Result of Multitasking Network}
   \label{tab:drwwldsyjg}
   \centering
   \begin{threeparttable}[b]
@@ -399,89 +400,65 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
       \midrule
       % 增强解析器（静态预言） & 87.1 & 88.2 & 65.9 & 67.5\\
       % 增强解析器（非确定性预言, 不解决过滤条件顺序问题） & 88.1 & 89.2 & 68.3 & 69.1\\
+      WikiSQL & 60.0 & 72.4 & 72.3 & 72.6 & 45.8 & 64.8 & 72.9 & 74.0 & 78.7\\
+      IWSLT & 25.0 & 23.3 & 26.0 & 25.5 & 14.2 & 23.6 & 29.0 & 26.1 & 29.7\\
       SQuAD & 48.2 & 68.2 & 74.6 & 75.5 & 47.5 & 66.8 & 71.8 & 70.8 & 74.3\\
-      IWSLT & 25.0 & 23.3 & 26.0 & 25.5 & 14.2 & 13.6 & 9.0 & 16.1 & 13.7\\
       CNN/DM & 19.0 & 20.0 & 25.1 & 24.0 & 25.7 & 14.0 & 15.7 & 23.9 & 24.6\\
       MNLI & 67.5 & 68.5 & 34.7 & 72.8 & 60.9 & 69.0 & 70.4 & 70.5 & 69.2\\
       SST & 86.4 & 86.8 & 86.2 & 88.1 & 85.9 & 84.7 & 86.5 & 86.2 & 86.4\\
       QA-SRL & 63.5 & 67.8 & 74.8 & 75.2 & 68.7 & 75.1 & 76.1 & 75.8 & 77.6\\
       QA-ZRE & 20.0 & 19.9 & 16.6 & 15.6 & 28.5 & 31.7 & 28.5 & 28.0 & 34.7\\
       WOZ & 85.3 & 86.0 & 86.5 & 84.4 & 84.0 & 82.8 & 75.1 & 80.6 & 84.1\\
-      WikiSQL & 60.0 & 72.4 & 72.3 & 72.6 & 45.8 & 64.8 & 62.9 & 62.0 & 58.7\\
       MWSC & 43.9 & 46.3 & 40.4 & 52.4 & 52.4 & 43.9 & 37.8 & 48.8 & 48.4\\
       \midrule
-      总得分 & - & - & - & - & 473.6 & 546.4 & 533.8 & 562.7 & 571.7\\
+      总得分 & - & - & - & - & 483.6 & 566.4 & 543.8 & 584.7 & 607.7\\
       \bottomrule
     \end{tabular}
   \end{threeparttable}
 \end{table}
 
-如图\ref{fig:cnl2sqlnet}以及\ref{fig:cnl2sqltcr}所示，我们的模型的训练样本为包含任务序列、内容序列以及结果序列的三元组。
-我们所做的对比实验的基准为使用了指针生成器的序列到序列的模型（简称S2S模型）\cite{See2017Get}。
-不一样的是，S2S模型的输入为自然语言问题序列，而多任务网络的输入为任务及内容序列的集合。
-
+本次实验中，本文不仅将中英翻译任务（IWSLT）与NL2SQL任务（WikiSQL）进行同时学习，而且还加入了阅读理解（SQuAD）、摘要（CNN/DM）、自然语言推理（MNLI）、情绪识别（SST）、语义角色标注（QA-SRL）、关系抽取（QA-ZRE）、对话系统（WOZ）、语义解析（MWSC）任务进行多任务学习。
+需要说明的是，每个任务的评价指标不一致，例如：IWSLT的指标为BLEU，WikiSQL的指标为逻辑形式准确度等等。
 实验结果如表\ref{cnl2sql:syyfx}所示，表中S2S代表序列到序列(sequence to sequence)模型，(w/SAtt)代表增加带自注意力机制的S2S模型，
 (+CAtt)代表将任务与内容序列拆分为两个输入序列并增加对偶协同注意力机制，(+QPtr)代表增加任务指针器， (+ACurr)代表增加反递进学习过程。
 总得分表示多任务学习时各个子任务得分的和，由于单任务不存在多任务的得分和所以标记为’-’。
+如图\ref{fig:cnl2sqlnet}以及图\ref{fig:cnl2sqltcr}所示，模型的训练样本为包含任务序列、内容序列以及结果序列的三元组。
+本文所做的对比实验的基准为使用了指针生成器的序列到序列的模型（简称S2S模型）\cite{See2017Get}。
+不一样的是，S2S模型的输入为自然语言问题序列，而多任务网络的输入为任务及内容序列的集合。
 
+\textbf{单任务模式下的实验结果}
 
-在表\ref{cnl2sql:syyfx}中的指标可以看出，S2S模型在SQuAD任务上的效果较差，在WikiSQL数据集上的得分比之前的序列到序列的基准方案要高，但是普遍都没有多任务网络（+QPtr）的效果优异。
+从表\ref{cnl2sql:syyfx}中的数据可以看出，在单任务的模式下，S2S模型在WikiSQL数据集上的得分比之前的序列到序列的基准方案要高，而多任务网络（+QPtr）的效果更加优异，但S2S模型在SQuAD等任务上的效果较差。
 在S2S模型的基础上增加了带自注意力机制层（w/SAtt）的编码器和解码器之后\cite{vaswani2017attention}，模型具备了整合来自任务和内容信息的能力。
 从表中可以看出，新的模型在SQuAD任务上提升了20 nF1，QA-SRL任务上提升了4 nF1，WikiSQL上提升了12 LFEM。
 模型在WikiSQL上的表现接近了最高水平的范围，在没有使用结构化的方法\cite{dong2018coarse,huang2018natural,yu2018typesql}下达到了72.4\%。
 
-接着，我们尝试将任务和内容从输入中进行拆分并增加了对偶协同注意力机制（+CAtt）。
+接着，本文尝试将任务和内容从输入中进行拆分并增加了对偶协同注意力机制（+CAtt）。
 可以看到，模型在SQuAD和QA-SRL上的性能提升了超过5 nF1，但是在其他任务上没有明显的提升，甚至在MNLI和MWSC任务上的性能有所降低。
 其原因是由于两个任务往往能够从输入中直接复制一些单词作为输出，S2S模型的输入为任务和内容信息的集合，所以其中的指针生成器可以直接完成从输入中复制信息到输出的操作。
 而将任务和内容信息拆分为两个输入序列的时候，模型就失去了这个能力。
 
-为了解决这个问题，我们在之前的模型上又增加了一个任务指针（+QPtr）进行实验。
+为了解决这个问题，本文在之前的模型上又增加了一个任务指针（+QPtr）进行实验。
 实验结果显示，任务指针有效的提高了模型在MNLI和MWSC上的性能。
 同时，模型在SQuAD任务上提升到了75.5 nF1，达到了SQuAD领域中使用直接跨度检测方法的水平，也就是说多任务网络达到了不明确将问题进行跨度检测的方法中的最高水平。
 
-最后的模型在WikiSQL任务上达到了72.4\%的lfEM以及80.4\%的数据库执行准确率，超过了之前的最高水平\cite{dong2018coarse}的71.7\%和78.5\%。
+最后的模型在WikiSQL任务上达到了72.6\%的逻辑形式准确率以及80.4\%的数据库执行准确率，超过了之前的最高水平\cite{dong2018coarse}的71.7\%和78.5\%。
 
-在单任务与多任务的比较中，我们也得到了类似的结果以及注意到了一些额外的特点。
+\textbf{多任务模式下的实验结果}
+
+从表\ref{cnl2sql:syyfx}中的数据可以看出，在多任务的模式下，S2S模型在很多任务下的表现相比于单任务模式还要更差，模型的总得分只有473.6分。
+而增加了带自注意力机制层（w/SAtt）、对偶协同注意力机制（+CAtt）、任务指针（+QPtr）后模型的表现越来越好，达到了584.7分。
+充分说明了模型在多任务场景下具有很好的通用性和可拓展性。
 多任务与单任务模型相比，在QA-ZRE任务上的F1得分又有11点提升，也验证了多任务的模型在解决零样本学习（zero-shot learning）上的能力。
+更为重要的是，在多任务模式下WikiSQL任务的逻辑形式准确率为74.0\%、数据库执行准确率为83.4\%，使用反递进学习策略下的性能更加优秀，详见\ref{cnl2sql:btyhclxdsyjg}节。
 
 \subsection{不同优化策略下的实验结果}
-
-在多任务的训练过程中我们尝试了各种批量采样（batch-level sampling）的策略，包括联合训练、递进学习、反递进学习等，其实验结果如表\ref{tab:drwwlzbtxlclxdsyjg}所示。
-
-我们首先考虑的是完全联合（fully joint）的策略。
-从训练开始到结束，我们对所有的任务按照固定的顺序循环的进行批量采样。
-这种策略在迭代（iteration）次数较少的单任务下的表现良好，见表\ref{tab:drwwlzbtxlclxdsyjg}，但在迭代次数较多的单任务下性能不佳。
-经过总结我们发现，单任务与多任务场景下的性能的差异与单任务的迭代次数之间有很强的关联。
-
-由于上述原因，我们还尝试了一些反递进学习的策略\cite{Bengio2009Curriculum}。
-这些训练的策略都是由两阶段组成的：1）在第一阶段中对部分任务进行联合训练（往往选择较难的任务）。2）第二阶段根据完全联合策略进行对所有任务进行训练。
-
-首先，我们尝试了先将SQuAD任务进行单独训练，之后再对其他的所有任务进行完全联合训练。
-由于我们的多任务网络对于所有任务来说是一种基于问答的方法，所以我们联想到是否可以先与训练SQuAD这样的QA数据集然后再对其他的类QA的任务进行训练。
-这种方法可以使得解码器先学会如何从内容信息中检索出有用信息，然后学习不同的任务以及如何产生属于不同任务领域的单词。
-在SQuAD这个任务场景下进行预训练已经被证明可以提高NLI的性能\cite{min2017question}。
-根据我们的实验来看，这种方式相对于其他的训练策略而言是一种更有效的训练策略，在总得分上获得了571.7的最高分。
-需要特别提到的是，这种策略在IWSLT任务上的得分较低，但是在其他的任务中会有更大的提升，特别是使用指针的任务。
-
-为了探索在递进学习策略的初始状态下增加额外的任务是否会进一步提高性能，我们还尝试了将IWSLT、CNN/DM任务和IWSLT、CNN/DM、MNLI任务加入到第一阶段进行训练。
-这些任务包含了与其他任务非常相关的训练样本，并且也包含了最长的结果序列。
-除此之外，这些任务具有很高的多样性，应该能够让解码器学会更多的解码方式，例如针对IWSLT的词汇表、针对SQuAD与CNN/DM的内容指针以及针对MNLI的任务指针。
-然而，实验结果表明这些新增的任务并没有提升模型的性能。
-在将SQuAD, IWSLT, CNN/DM和MNLI加入到递进学习的初始状态下时，其他的一些任务（例如QA-SRL, WikiSQL和MWSC）的性能明显下降。
-
-另外，我们也尝试了在递进学习策略的初始状态下使用了SST, QA-SRL, QA-ZRE, WOZ, WikiSQL和MWSC，这也就意味着先选择一些最简单的任务并进行训练。
-实验证明，这个策略是一个非常低劣的策略，不仅在初始递进学习中的任务的性能很差，在SQuAD和IWSLT上的表现更差。
-
-事实证明，对于我们的任务而言，使用反递进学习策略的效果优于递进学习策略，也就是说明了先学习简易的任务未能使模型学到能应用于其他任务的表示，甚至使得模型想要学习到其他任务有用的内部表示变得更加地困难。
-除此之外，实验的结果也说明了多任务学习的挑战。
-通过改变所学习的任务的先后次序可能可以提高某些任务性能，但也很有可能使其他的任务的性能下降。
-这也是多任务学习中一个非常值得研究的任务。
-
+\label{cnl2sql:btyhclxdsyjg}
 
 \begin{table}[!htpb]
   \bicaption[多任务网络在不同训练策略下的实验结果]
     {多任务网络在不同训练策略下的实验结果}
-    {The Experimental results Of Multitasking Networks With Different Strategies}
+    {The Experimental Results of Multitasking Networks With Different Strategies}
   \label{tab:drwwlzbtxlclxdsyjg}
   \centering
   \begin{threeparttable}[b]
@@ -510,13 +487,56 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   \end{threeparttable}
 \end{table}
 
+在多任务的训练过程中本文还尝试了各种批量采样（batch-level sampling）的策略，包括联合训练、递进学习、反递进学习等，其实验结果如表\ref{tab:drwwlzbtxlclxdsyjg}所示。
+
+首先考虑的是完全联合（fully joint）的策略。
+从训练开始到结束，对所有的任务按照固定的顺序循环的进行批量采样。
+这种策略在迭代（iteration）次数较少的单任务下的表现良好，见表\ref{tab:drwwlzbtxlclxdsyjg}，但在迭代次数较多的单任务下性能不佳。
+经过总结，本文发现单任务与多任务场景下的性能的差异与单任务的迭代次数之间有很强的关联。
+
+由于上述原因，本文还尝试了一些反递进学习的策略\cite{Bengio2009Curriculum}。
+这些训练的策略都是由两阶段组成的：1）在第一阶段中对部分任务进行联合训练（往往选择较难的任务）。2）第二阶段根据完全联合策略进行对所有任务进行训练。
+
+首先，尝试先将SQuAD任务进行单独训练，之后再对其他的所有任务进行完全联合训练。
+由于多任务网络对于所有任务来说是一种基于问答的方法，所以联想到是否可以先与训练SQuAD这样的QA数据集然后再对其他的类QA的任务进行训练。
+这种方法可以使得解码器先学会如何从内容信息中检索出有用信息，然后学习不同的任务以及如何产生属于不同任务领域的单词。
+在SQuAD这个任务场景下进行预训练已经被证明可以提高NLI的性能\cite{min2017question}。
+根据实验结果来看，这种方式相对于其他的训练策略而言是一种更有效的训练策略，在总得分上获得了571.7的最高分。
+需要特别提到的是，这种策略在IWSLT任务上的得分较低，但是在其他的任务中会有更大的提升，特别是使用指针的任务。
+
+为了探索在递进学习策略的初始状态下增加额外的任务是否会进一步提高性能，本文还尝试了将IWSLT、CNN/DM任务和IWSLT、CNN/DM、MNLI任务加入到第一阶段进行训练。
+这些任务包含了与其他任务非常相关的训练样本，并且也包含了最长的结果序列。
+除此之外，这些任务具有很高的多样性，应该能够让解码器学会更多的解码方式，例如针对IWSLT的词汇表、针对SQuAD与CNN/DM的内容指针以及针对MNLI的任务指针。
+然而，实验结果表明这些新增的任务并没有提升模型的性能。
+在将SQuAD, IWSLT, CNN/DM和MNLI加入到递进学习的初始状态下时，其他的一些任务（例如QA-SRL, WikiSQL和MWSC）的性能明显下降。
+
+另外，本文也尝试了在递进学习策略的初始状态下使用了SST, QA-SRL, QA-ZRE, WOZ, WikiSQL和MWSC，这也就意味着先选择一些最简单的任务并进行训练。
+实验证明，这个策略是一个非常低劣的策略，不仅在初始递进学习中的任务的性能很差，在SQuAD和IWSLT上的表现更差。
+
+事实证明，对于NL2SQL任务而言，使用反递进学习策略的效果优于递进学习策略，也就是说明了先学习简易的任务未能使模型学到能应用于其他任务的表示，甚至使得模型想要学习到其他任务有用的内部表示变得更加地困难。
+除此之外，实验的结果也说明了多任务学习的挑战。
+通过改变所学习的任务的先后次序可能可以提高某些任务性能，但也很有可能使其他的任务的性能下降。
+这也是多任务学习中一个非常值得研究的任务。
+
+
+
+
 \subsection{实验分析}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=15cm]{example/cnl2sqlselect.pdf}
+  \bicaption[多任务网络输出来源]
+    {多任务网络输出来源}
+    {The Source of Multitasking Network Output}
+  \label{fig:cnl2sqlselect}
+\end{figure}
 
 \textbf{多指针生成器与任务识别}
 
 多任务网络会从三个方面进行选择：从词汇表生成词汇、任务序列上的指针以及内容序列上的指针。
 尽管模型没有明确的监督信号来训练这些选择，但网络仍可以学会如何在这三个选择之间进行切换。
-图xx显示了我们最好的模型选择每个选项的频率是怎样的。
+图\ref{fig:cnl2sqlselect}显示了本文最好的模型选择每个选项的频率是怎样的。
 可以看出，对于SQuAD，QA-SRL和WikiSQL任务，模型主要是从内容信息中进行选择和复制，这正是因为这些任务中的正确结果主要攘括在内容中。
 由于答案的摘要主要由内容中的单词组成，模型在CNN/DM任务中也是主要从内容中进行复制。
 对于SST，MNLI和MWSC，由于任务序列中会包含需要的类别，所以模型也偏向选择任务指针。
