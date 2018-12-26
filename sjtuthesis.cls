@@ -107,7 +107,8 @@
 \RequirePackage{caption}
 \RequirePackage[list=off]{bicaption}
 \RequirePackage{subcaption}
-\RequirePackage[backend=biber,style=gb7714-2015]{biblatex}
+% \RequirePackage[backend=biber,style=gb7714-2015]{biblatex}
+\RequirePackage[backend=biber, style=gb7714-2015, gbnamefmt=lowercase, gbpub=false]{biblatex}
 \RequirePackage{xcolor}
 \RequirePackage{listings}
 \RequirePackage{textcomp}
