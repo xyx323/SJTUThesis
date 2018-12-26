@@ -30,7 +30,7 @@ NL2SQL的输入表示为$x$，其包含由单词$w_{i}$组成的自然语言问�
     \includegraphics[width=15cm]{example/nl2sql.png}
     \bicaption[NL2SQL的典型示例]
       {NL2SQL的一个典型示例}
-      {An Example Of NL2SQL}
+      {An Example of NL2SQL}
     \label{fig:nl2sqlexample}
   \end{figure}
 
@@ -83,7 +83,7 @@ NL2SQL（Nature Language To SQL Statement）任务可以看作是一种语义解
 然而，由于SQL语句的逻辑形式往往由人工定义，构造出的训练数据集往往非常小。
 同时歧义问题（不同逻辑形式的语句可能产生相同的执行结果，并且无法区分哪种形式是正确结果并作为监督信号）使得设计出来的解析器的性能非常有限。
 在2017年，Victor Zhong\cite{zhong2017seq2sql}发布了一个由带注释的自然语言查询、SQL查询语句和对应的数据库模式构成的大型数据集WikiSQL。
-%DONE ***中写出作者名字
+
 尽管与之前的SQL生成领域的ATIS和GeoQuery数据集相比，WikiSQL数据集覆盖的SQL语法较少，但是它的优势在于数据集很大并且在自然语言问题的表示和数据库模式和内容上有着非常高的多样性。
 这也意味着神经网络和深度学习技术可以更好地应用在NL2SQL这个领域上。
 
@@ -113,7 +113,7 @@ NL2SQL（Nature Language To SQL Statement）任务可以看作是一种语义解
   \includegraphics[width=10cm]{example/DLS.pdf}
   \bicaption[智能系统的演变]
     {智能系统的演变\cite{goodfellow2016deep}}
-    {The Evolution Of Intelligent Systems}
+    {The Evolution of Intelligent Systems}
   \label{fig:DLS}
 \end{figure}
 
@@ -354,7 +354,7 @@ $a$为权重，表示输出时应当考虑多少输入状态。
   \includegraphics[width=15cm]{example/nl2sqlapproach.pdf}
   \bicaption[基于深度强化学习的NL2SQL生成的技术方案]
     {基于深度强化学习的NL2SQL生成的技术方案}
-    {The Approach of NL2SQL With Deep Reinforcement Learning}
+    {The Approach of NL2SQL with Deep Reinforcement Learning}
   \label{fig:nl2sqlapproach}
 \end{figure}
 
@@ -375,12 +375,11 @@ $a$为权重，表示输出时应当考虑多少输入状态。
 本文参考强化学习的基本范式，将增强解析器模型的基本过程定义为：
 
 \textit{解析器（agent）从初始状态启动并不断根据学习的策略采取不同的动作（action）。每个动作都会将解析器从一个状态(state)转移为另一个状态，直到解析器到达它的最终状态并停止。在解析器的最终状态下，得到输出$y$。}
-%DONE 把上段文字设为斜体字。
 
 在这里，本文采取一种概率的方法来对整个策略(policy)进行建模。
 通过对输入$x$产生的所有动作(action)和解码器产生的历史行为建模得到一个概率分布。
 而增量解析器的训练目标就转换为了如何去优化一个参数化的策略的问题，如公式\ref{enl2sql:eq1}所示。
-%DONE 全文中用词要精确，是增强解析器，不是增量语义解析器，用词要统一。
+
 % ， 其中$\theta$为模型参数。
 \begin{equation}
     \label{enl2sql:eq1}
@@ -406,7 +405,7 @@ $a$为权重，表示输出时应当考虑多少输入状态。
 
 在后面的几小节中，将给出增强解析器的状态(state)的定义与动作(action)序列，
 还会详细说明整个基于编码器-解码器神经网络体系结构的增强解析器模型。
-%DONE 上一句话有问题，不要用“介绍”，另外要和后面的小节内容一致。
+
 % \begin{figure}[!htp]
 %   \centering
 %   \includegraphics[width=20cm]{example/incsql.png}
@@ -449,7 +448,7 @@ $\begin{bmatrix}
   \end{bmatrix}$
 
 因此，解析器的中间状态就被这样表示，其中一些尚未填充的特征值表示为$\epsilon$。
-%done 分部？
+
 解析器的初始状态$p_{0}$的值为空和空列表，表示为$\begin{bmatrix}
   AGG    &  \epsilon  \\
   SELCOL &  \epsilon \\
@@ -547,9 +546,6 @@ $||$表示列表展开，$COND_{-1}$表示在列表中的上一个元素。
 双线性函数中$r^A_a$是由动作嵌入(action embedding)和参数表示(parameter representation)建模得到的动作$a$的向量表示。
 其中参数表示已经在表\ref{enl2sql:dzqd}中给出。
 
-%TODO 第二个挑战是如何应对的？
-
-
 为了解决第二个挑战，本文使用点积注意力机制（dot-product attention）\cite{vaswani2017attention}来捕获模型决策与输入的问题和列名之间的依赖关系。
 之后，将前一$i$时刻的输出动作表示$r^A_{a_i}$、自然语言问句的注意力向量$e^W_i$以及列名的注意力向量$e^C_i$拼接在一起，
 作为$i+1$时刻的LSTM解码器的第一层的输入。
@@ -563,7 +559,6 @@ $||$表示列表展开，$COND_{-1}$表示在列表中的上一个元素。
 然而实际上，这个假设并不能完全成立。
 一个简单的例子就是出现在WHERE子句里面的过滤条件的顺序并不确定，不同的过滤条件的顺序将会导致不同的动作序列。
 除此之外，本文在\ref{enl2sql:icn}节中还对过滤条件顺序问题进行了描述，它会产生一个自然语言问题可以转换为多种SQL查询语句且其执行结果仍保持一致的“歧义”问题。
-%DONE 引用后面的小节是不妥的，应把第二种情况在此说明，而不是在3.3.6.2节阐述。
 对于最终用户而言，这些查询语句其实是完全等效的。
 
 针对上述的两种情况，本文将每个训练样本转换为多个序列以供参考并且在训练过程中使用多种目标策略。
@@ -620,7 +615,6 @@ $a_{i} = \mathop{\arg\max}_{a\in O(x,a_{<i})}$,$a_i$代表在训练时解析器�
 
 \section{实验与分析}
 为了评估基于深度强化学习的NL2SQL方法的准确度，本文采用WikiSQL、ATIS和Spider数据集进行了对比实验。
-%DONE 评价指标是准确度？全文要一致。第二章是准确性，而本章后面却是准确度。
 
 \subsection{数据集与评价指标}
 WikiSQL是由Zhong\cite{zhong2017seq2sql}提出的第一个由自然语言问题、对应的SQL查询语句及数据表schema构成的大型数据集。
@@ -684,7 +678,6 @@ WikiSQL数据集中SQL查询语句具有一定的约束条件：
 \end{itemize}
 
 除了在WikiSQL进行实验外，本文还在ATIS\cite{Dahl1994Expanding}和Spider数据集\cite{yu2018spider}上进行了补充实验，以评估模型的拓展性和生成不同难度的SQL查询语句的能力。
-%Done 上一句话补充完整。
 
 本实验将数据集划分为训练集、验证集和测试集。
 % 我们在验证集和测试集上对训练后的分别使用静态预言和非确定性预言的模型进行了评价。
@@ -718,7 +711,7 @@ WikiSQL数据集中SQL查询语句具有一定的约束条件：
 \begin{table}[!htpb]
   \bicaption[WikiSQL中验证集和测试集的准确度]
     {WikiSQL中验证集和测试集的准确度}
-    {The Accuracy Of Validation Sets And Test Sets In WikiSQL}
+    {The Accuracy of Validation Sets and Test Sets in WikiSQL}
   \label{tab:wzyzjhcsjdzqd}
   \centering
   \begin{threeparttable}[b]
@@ -778,7 +771,7 @@ WIKISQL实验的主要结果如表\ref{tab:wzyzjhcsjdzqd}所示。其中Acc$_{lf
   \centering
   \bicaption[使用不同集束大小的模型性能]
     {使用不同集束大小的模型性能}
-    {Model Performance With Different Beam Sizes}
+    {Model Performance with Different Beam Sizes}
   \label{enl2sql:sybtjsdxdmxxn}
   \begin{tabular}{ccccc} \toprule
     % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
@@ -804,7 +797,7 @@ ATIS数据集包含更多样的SQL结构，包括对多个表的查询以及嵌�
 \begin{table}[!htpb]
   \bicaption[ATIS数据集上的实验结果]
     {ATIS数据集上的实验结果}
-    {The Experimental Results On The ATIS Dataset}
+    {The Experimental Results on the ATIS Dataset}
   \label{tab:asjjsdsyjg}
   \centering
   \begin{threeparttable}[b]
@@ -840,14 +833,14 @@ ATIS数据集包含更多样的SQL结构，包括对多个表的查询以及嵌�
   \includegraphics[width=15cm]{example/spider.pdf}
   \bicaption[Spider数据集样例]
     {Spider数据集样例}
-    {Examples Of The Spider Dataset}
-  \label{fig:spiderxample}
+    {Examples of the Spider Dataset}
+  \label{fig:Spiderxample}
 \end{figure}
 
-spider数据集是一个由11名耶鲁大学学生标注的大型的跨域的包含语义解析和文本到SQL语句的数据集。
+Spider数据集是一个由11名耶鲁大学学生标注的大型的跨域的包含语义解析和文本到SQL语句的数据集。
 其挑战的目标为开发在跨域的数据集上开发自然语言接口。
-spider数据集由200个数据库中的10181个问题和5693个SQL查询语句组成，并且其中有很多表覆盖了138个不同的域。
-不同复杂程度的SQL查询会出现在训练集和测试集中，如图\ref{fig:spiderxample}中所示。
+Spider数据集由200个数据库中的10181个问题和5693个SQL查询语句组成，并且其中有很多表覆盖了138个不同的域。
+不同复杂程度的SQL查询会出现在训练集和测试集中，如图\ref{fig:Spiderxample}中所示。
 这也就要求模型需要具有较好的拓展性，从而适应新的SQL查询语句以及新的数据库模式。
 
 \begin{figure}[!htp]
@@ -855,11 +848,11 @@ spider数据集由200个数据库中的10181个问题和5693个SQL查询语句�
   \includegraphics[width=10cm]{example/spiderchart.png}
   \bicaption[Spider数据集的组成]
     {Spider数据集的组成}
-    {The Component of The Spider Dataset}
-  \label{fig:spiderchart}
+    {The Components of The Spider Dataset}
+  \label{fig:Spiderchart}
 \end{figure}
 
-如图\ref{fig:spiderchart}所示，spider数据集的1.0版本有别于其他之前的所有SQL语义解析的数据集：
+如图\ref{fig:Spiderchart}所示，Spider数据集的1.0版本有别于其他之前的所有SQL语义解析的数据集：
 
 \begin{itemize*}
   \item 对于ATIS, Geo和Academic数据集来说，每个数据集都只包含在一个数据库中执行的若干个SQL查询，并且SQL查询在训练集和测试集的分割时完全相同的。
@@ -867,7 +860,7 @@ spider数据集由200个数据库中的10181个问题和5693个SQL查询语句�
   \item WikiSQL数据集中的SQL查询和表的数量都相对较大，但是所有的SQL查询语句都较为简单，并且每个数据库都只有一个没有任何外键的表。  
 \end{itemize*}
 
-所以，在spider数据集上的实验能够说明模型从简单的SQL查询语句生成到复杂的SQL查询语句生成的能力，说明模型的通用性与泛化性。
+所以，在Spider数据集上的实验能够说明模型从简单的SQL查询语句生成到复杂的SQL查询语句生成的能力，说明模型的通用性与泛化性。
 
 \begin{table}[!htpb]
   \bicaption[Spider数据集上的实验结果]
@@ -903,16 +896,13 @@ spider数据集由200个数据库中的10181个问题和5693个SQL查询语句�
 
 从表\ref{tab:ssjjsdsyjg}可以看出，本文使用$ANYCOL$的非确定预言的模型进行测试，在测试集上分别达到了 23.2\%和24.1\%的准确度，超过了之前提出的所有方法。
 使用非确定预言的模型可以很好地解决过滤条件顺序问题，所以在性能上表现优异。
-同时，得益于$ANYCOL$机制对隐式列名问题的处理，在spider数据集上的表现证明了模型具有很好的泛化性能。
-
-%\subsection{实验分析}
-%TODO 像第二章的实验一样，一一列出实验结论
+同时，得益于$ANYCOL$机制对隐式列名问题的处理，在Spider数据集上的表现证明了模型具有很好的泛化性能。
 
 \section{本章小结}
 
 本章提出了一种基于深度强化学习的NL2SQL生成的方法。
 在离线训练阶段，将符合WikiSQL格式的数据进行序列表示后输入给网络模型，模型生成SQL查询语句后在数据库中执行，再使用奖励函数构造奖励用于强化网络模型。
-%DOne WikiSQL是实验数据，不应在方法中出现。
+
 在在线生成阶段用户输入自然语言查询语句及数据库模式，训练好的网络模型将生成符合用户查询意图的SQL查询语句。
 本文把其中最重要的网络模型称为“增强解析器”模型，它由编码器和解码器构成并结合了自注意力机制。
 参考强化学习的基本范式，本章将增强解析器学习的目标转换为策略的优化问题并对解析器的状态和动作进行了定义。
