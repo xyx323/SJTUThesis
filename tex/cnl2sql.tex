@@ -14,7 +14,7 @@
 在第\ref{chap:enl2sql}章中，本文结合了深度学习与深度强化学习来解决NL2SQL的问题。
 然而，目前所有研究都只是将英文的自然语言问题转换为机器可执行的SQL查询语句，而没有涉及到其他语种的自然语言。
 % 如何将中文自然语言问题转换为SQL查询语句？如何进一步提升英文自然语言生成SQL查询语句的准确性？
-本章研究提出了基于多任务学习的自然语言生成 SQL 查询语句（NL2SQL）的方法，提升NL2SQL任务中英文自然语言生成SQL查询语句的准确性，以及同时解决中文自然语言问题转换为SQL查询语句的问题。
+本章研究提出了基于多任务学习的自然语言生成 SQL 查询语句（NL2SQL）的方法，不仅解决了中文自然语言问题转换为SQL查询语句，同时提升了英文自然语言生成SQL查询语句的准确性。
 
 
 \section{相关技术}
@@ -31,7 +31,7 @@
   \includegraphics[width=7cm]{example/MHA.png}
   \bicaption[缩放点积注意力和多头注意力]
     {缩放点积注意力（scaled dot-product attention）和多头注意力（multi-head attention）}
-    {Scaled Dot-product Attention And Multi-head Attention}
+    {Scaled Dot-product Attention and Multi-head Attention}
   \label{fig:SDPAMHA}
 \end{figure}
 
@@ -114,7 +114,7 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
     \includegraphics[width=15cm]{example/cnl2sqlproblem.pdf}
     \bicaption[中文自然语言问题生成SQL查询语句的错误示例]
       {中文自然语言问题生成SQL查询语句的错误示例}
-      {An Error Example of Chinese Nature Language To SQL Statement}
+      {An Error Example of Chinese Nature Language to SQL Statement}
     \label{fig:cnl2sqlproblem}
   \end{figure}
 
@@ -127,19 +127,19 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
 
 \begin{figure}[!htp]
     \centering
-    \includegraphics[width=15cm]{example/tcr.pdf}
-    \bicaption[TCR模板]
-      {TCR模板（任务-内容-结果模板）}
-      {TCR Template}
+    \includegraphics[width=12cm]{example/tcr.pdf}
+    \bicaption[TCR 示例]
+      {TCR 示例}
+      {TCR Examples}
     \label{fig:cnl2sqltcr}
   \end{figure}
-%DONE 上图中的任务不要用问句，直接用祈使句。
+
 如图\ref{fig:cnl2sqltcr}所示，本文将中文自然语言翻译为英文自然语言任务和英文自然语言生成SQL查询语句任务使用TCR模板（任务-内容-结果）进行统一。
-例如，“告诉我南澳有哪些注意要点”先翻译为英文，其任务为“Please translate Chinese into English.”，
-%DONE 任务不要用问句，直接用祈使句。
+例如，“告诉我南澳有哪些注意要点”先翻译为英文，其任务为“Please translate Chinese into English”，
+
 内容为“告诉我南澳有哪些注意要点”（表明所需要翻译的中文语句），结果为“Tell me what the notes are for South Australia”。
-而后再将“Tell me what the notes are for South Australia”转换为SQL查询语句，其任务为“Please translate English into SQL statement.”，
-%DONE 任务不要用问句，直接用祈使句。
+而后再将“Tell me what the notes are for South Australia”转换为SQL查询语句，其任务为“Please translate English into SQL statement”，
+
 内容为“The table has column names… Tell me what the notes are for South Australia”（表明数据库模式和英文查询语句），结果为“SELECT notes from table WHERE ‘Current Slogan’ =‘South Australia”，从而完成生成的全过程。
 
 TCR模板将两个任务的模式进行了统一，使得网络模型的输入和输出得以一致，而不用设计两个不同的网络结构来处理这两个任务。
@@ -147,24 +147,41 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \subsection{多任务学习网络}
 
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=10cm]{example/cnl2sqltransfer.pdf}
+  \bicaption[多任务学习网络的总体结构]
+    {多任务学习网络的总体结构}
+    {Architecture of Multitasking Learning Network}
+  \label{fig:cnl2sqltransfer}
+\end{figure}
+
 本文使用TCR模板对每个任务进行统一并且在训练阶段采用联合训练的方法，其所使用的神经网络的结构称为多任务学习网络，如图\ref{fig:cnl2sqlnet}所示。
 近几年来，有不少研究者所研究的问答模型\cite{wang2016machine,seo2016bidirectional,xiong2017dcn+}的和本文提出的模型较为类似，
-%DONE 这些研究者的问答模型要有参考文献引用
+
 他们的问答模型往往假设模型得到的答案片段可以直接从上下文信息中复制，但是本文提出的多任务学习网络适用于更复杂的问答场景。
-%done 为何是问答？是否是指端到端模型、端到端转换？（不完全是，有很多人把机器阅读理解（问题，文章段落，答案）的模型和其他类似的模型统称为问答模型（Question Answering）,本文的多任务学习网络模型类似于问答模型，不过更加泛化）
+
 在之前的TCR模板中，任务对应于问答模型中的问题，内容对应于问答模型中的上下文，而结果对应于问答模型中的回答。
 由于TCR模板中的任务往往包含限制搜索空间的非常关键的信息，本文会在多任务学习网络中使用了协同注意力机制\cite{vaswani2017attention}并加以拓展，从而使得对模型输入的表示更加丰富。
-此外，多任务学习网络还采用了指针机制\cite{vinyals2015pointer}，并将其改造为分层的多指针生成器，使得网络能够直接从任务和内容中进行文本的复制。
+多任务学习网络还采用了指针机制\cite{vinyals2015pointer}，并将其改造为分层的多指针生成器，使得网络能够直接从任务和内容中进行文本的复制。
+
+
+
+多任务网络的不同任务之间的迁移过程如图\ref{fig:cnl2sqltransfer}所示，
+图中编码器和解码器为示意图，其详细结构见图\ref{fig:cnl2sqlnet}。
+可以看到，任务1训练完成时的对偶协同注意力中的参数可以被直接作为任务2对应参数的初始状态，这一过程也叫做微调（Fine tuning）。
+网络在其他任务上所学习到的一些表示可以通过这种方式进行迁移。
+在实验阶段，本文在多任务学习中还使用了不同的训练策略进行优化，详见\ref{cnl2sql:btyhclxdsyjg}。
 
 \begin{figure}[!htp]
   \centering
   \includegraphics[width=15cm]{example/cnl2sqlnet.pdf}
-  \bicaption[多任务学习网络结构]
-    {多任务学习网络结构}
-    {The Architecture of Multitasking Learning Network}
+  \bicaption[多任务学习网络的详细结构]
+    {多任务学习网络的详细结构}
+    {Detail Structure of Multitasking Learning Network}
   \label{fig:cnl2sqlnet}
 \end{figure}
-%done上图中只有一个任务，上次和你讲过，要再画一个图，把多个任务画出来，并表达出多任务学习时的迁移学习的思路，要有编码器和解码器。
+
 
 在训练阶段，多任务学习网络的输入序列由三个部分组成，分别为：由$l$个单词构成的内容$c$；
 由$m$个单词构成的任务$q$；由$n$个单词构成的结果$a$。
@@ -174,19 +191,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
     C \in \mathbb{R}^{l \times d_{emb}} \qquad Q \in \mathbb{R}^{m \times d_{emb}} \qquad A \in \mathbb{R}^{n \times d_{emb}}
   \end{equation}
 
-此外，多任务网络的不同任务之间的迁移过程如图\ref{fig:cnl2sqltransfer}所示，
-图中黑色方框中的内容为多任务网络的简化图。
-可以看到，任务一训练完成时的对偶协同注意力中的参数可以被直接作为任务二对应参数的初始状态，这一过程也叫做微调（Fine tuning）。
-网络在其他任务上所学习到的一些表示可以通过这种方式进行迁移。
-在实验阶段，本文在多任务学习中还使用了不同的训练策略进行优化，详见\ref{cnl2sql:btyhclxdsyjg}。
-  \begin{figure}[!htp]
-    \centering
-    \includegraphics[width=15cm]{example/cnl2sqltransfer.pdf}
-    \bicaption[任务间的迁移学习]
-      {任务间的迁移学习}
-      {Transfer Learning Between Tasks}
-    \label{fig:cnl2sqltransfer}
-  \end{figure}
+
 
 接下来，本文将分别详细阐述多任务学习网络中的编码器和解码器。
 
@@ -200,14 +205,15 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 编码器的工作流程由六个阶段组成：
 
 \textbf{(1) 独立编码阶段}
-%done 小标题要有编号，余同修改
 
 首先使用一个简单的线性层将输入矩阵投射到$d$维的空间上，如公式\ref{cnl2sqleq:encoder1}。
 \begin{equation}
     \label{cnl2sqleq:encoder1}
     CW_1 = C_{proj} \in \mathbb{R}^{l \times d} \qquad QW_1 = Q_{proj} \in \mathbb{R}^{m \times d} 
   \end{equation}
-这些投射之后的表示将被输入给一个共享的双向长短期记忆网络(bi-LSTM)\cite{hochreiter1997long,graves2005framewise}[！脚注！]，如公式\ref{cnl2sqleq:encoder2}。
+这些投射之后的表示将被输入给一个共享的双向长短期记忆网络(bi-LSTM)\cite{hochreiter1997long,graves2005framewise}，如公式\ref{cnl2sqleq:encoder2}。
+%DONE 上面的脚注是什么意思？   已删除
+
 \begin{equation}
     \label{cnl2sqleq:encoder2}
     BILSTM_{ind}(C_{proj}) = C_{ind} \in \mathbb{R}^{l \times d} \qquad BILSTM_{ind}(Q_{proj}) = Q_{ind} \in \mathbb{R}^{l \times d}
@@ -288,19 +294,21 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \label{cnl2sql:decoder}
 
 在编码器得到最终的表示$C_{fin} \in \mathbb{R}^{l \times d}$和$Q_{fin} \in \mathbb{R}^{m \times d}$（即编码之后的内容信息和任务信息）后进入到解码器解码。
-解码器的工作流程由六个阶段组成：
+解码器的工作流程由四个阶段组成：
 
-\textbf{(1) 结果表示阶段}
-%DONE 小标题要有编号，余同修改
+%done 以下阶段的名称在上图中没有一一对应，试试能否改进一下。   合并为4个阶段并与图对应。
 
-在训练阶段，解码器首先要将结果$a$的表示投射到$d$维的空间上，如公式\ref{cnl2sqleq:decoder1}
+% \textbf{(1) 结果表示阶段}
+\textbf{(1) 自注意力阶段}
+
+在训练阶段，解码器首先进行结果的表示，将结果$a$的表示投射到$d$维的空间上，如公式\ref{cnl2sqleq:decoder1}
 
 \begin{equation}
   \label{cnl2sqleq:decoder1}
   AW_2 = A_{proj} \in \mathbb{R}^{n \times d} 
 \end{equation}
 
-之后紧接的是一个自注意力层，该注意力层与编码器中的自注意力层相对应。
+% 之后紧接的是一个自注意力层，该注意力层与编码器中的自注意力层相对应。
 由于该过程不包含循环和卷积操作，所以为$A_{proj}$加上了一个位置编码信息$x$，如公式\ref{cnl2sqleq:decoder2}。
 \begin{equation}
   \label{cnl2sqleq:decoder2}
@@ -311,9 +319,8 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   \end{array}
 \end{equation}
 
-\textbf{(2) 自注意力阶段}
-
 接着使用自注意力机制\cite{vaswani2017attention}从而使得解码器能够知道之前的输出（若之前没有输出则认为之前的输出为某个初始化的单词）和相关内容是什么，从而产生下一个输出。
+该注意力层与编码器中的自注意力层相对应
 在多头的注意力机制之后使用了一个残差前馈网络（FFN，其定义在\ref{cnl2sql:encoder}节中的自注意力阶段给出），如公式\ref{cnl2sqleq:decoder3}。
 
 \begin{gather}
@@ -323,7 +330,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   FFN_A(A_{ac} + A_{mha} + A_{ppr}) = A_{self} \in \mathbb{R}^{n \times d}
 \end{gather}
 
-\textbf{(3) 获得中间状态阶段}
+\textbf{(2) 获得中间状态阶段}
 
 之后，使用一个标准的带注意力机制的LSTM网络来对每个时刻$t$产生一个内容状态$\widetilde{c}_t$。
 这个LSTM又将使用之前的结果序列中的单词$A^{t-1}_{self}$和内容状态来生成一个中间状态$h_t$，如公式\ref{cnl2sqleq:decoder4}。
@@ -333,7 +340,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   LSTM([(A_{self})_{t-1};\widetilde{c}_{t-1}],h_{t-1})= h_t \in \mathbb{R}^{d} 
 \end{equation}
 
-\textbf{(4) 任务与内容注意力阶段}
+\textbf{(3) 任务与内容注意力阶段}
 
 上一阶段中的中间状态可用来获得注意力权重$\alpha^C_t$以及$\alpha^Q_t$，解码器从而可以获得$t$时刻的编码信息，如公式\ref{cnl2sqleq:decoder5}。
 
@@ -342,15 +349,15 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
   softmax(C_{fin}(W_2 h_t)) = \alpha^C_t \in \mathbb{R}^{l} \qquad softmax(Q_{fin}(W_3 h_t)) = \alpha^Q_t \in \mathbb{R}^{m}
 \end{equation}
 
-\textbf{(5) 获得内容与任务状态阶段}
+% \textbf{(5) 获得内容与任务状态阶段}
 
-内容的表示将于这些权重相结合并输入给一个前馈网络从而形成内容状态与任务状态，激活函数为$tanh$，如公式\ref{cnl2sqleq:decoder6}。
+内容的表示将与这些权重相结合并输入给一个前馈网络从而形成内容状态与任务状态，激活函数为$tanh$，如公式\ref{cnl2sqleq:decoder6}。
 \begin{equation}
   \label{cnl2sqleq:decoder6}
   tanh(W_4[C^{\top}_{fin}\alpha^C_t;h_t] = \widetilde{c}_{t} \in \mathbb{R}^{d} \qquad tanh(W_5[Q^{\top}_{fin}\alpha^Q_t;h_t] = \widetilde{q}_{t} \in \mathbb{R}^{d}
 \end{equation}
 
-\textbf{(6) 多指针生成阶段}
+\textbf{(4) 多指针生成阶段}
 
 由于本文的模型必须要能够生成那些未出现在任务或内容序列中的单词，所以需要额外声明一个词汇表$v$。
 从任务、内容和外部的词汇表中分别获得每个单词的概率分布，如公式\ref{cnl2sqleq:decoder7}。
@@ -384,9 +391,9 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \subsection{多任务学习实验}
 
 \begin{table}[!htpb]
-  \bicaption[多任务学习网络的实验结果]
-    {多任务学习网络的实验结果}
-    {The Experiment Result of Multitasking Network}
+  \bicaption[多任务学习的实验结果]
+    {多任务学习的实验结果}
+    {The Experiment Result of Multitasking Learning}
   \label{tab:drwwldsyjg}
   \centering
   \begin{threeparttable}[b]
@@ -419,7 +426,6 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 需要说明的是，每个任务的评价指标不一致，例如：IWSLT的指标为BLEU，WikiSQL的指标为逻辑形式准确率等等。
 
 实验结果如表\ref{tab:drwwldsyjg}所示，
-%done 表号不对，余同修改
 表中S2S代表序列到序列(sequence to sequence)模型，(w/SAtt)代表增加带自注意力机制的S2S模型，
 (+CAtt)代表将任务与内容序列拆分为两个输入序列并增加对偶协同注意力机制，(+QPtr)代表增加任务指针器， (+ACurr)代表增加反递进学习过程。
 总得分表示多任务学习时各个子任务得分的和，由于单任务不存在多任务的得分和所以标记为’-’。
