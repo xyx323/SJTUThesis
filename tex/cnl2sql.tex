@@ -13,8 +13,7 @@
 \label{chap:cnl2sql}
 在第\ref{chap:enl2sql}章中，本文结合了深度学习与深度强化学习来解决NL2SQL的问题。
 然而，目前所有研究都只是将英文的自然语言问题转换为机器可执行的SQL查询语句，而没有涉及到其他语种的自然语言。
-% 如何将中文自然语言问题转换为SQL查询语句？如何进一步提升英文自然语言生成SQL查询语句的准确性？
-本章研究提出了基于多任务学习的自然语言生成 SQL 查询语句（NL2SQL）的方法，不仅解决了中文自然语言问题转换为SQL查询语句，同时提升了英文自然语言生成SQL查询语句的准确性。
+本章研究提出了基于多任务学习的自然语言生成 SQL 查询语句（NL2SQL）的方法，不仅解决了中文自然语言问题转换为SQL查询语句，同时提升了英文自然语言生成SQL查询语句的准确率。
 
 
 \section{相关技术}
@@ -86,7 +85,7 @@ query和所有key计算点积，然后除以$\sqrt{d_k}$并计算$softmax$值，
 
 2011年，Collobert\cite{collobert2011natural}首先提出了可以同时处理多个自然语言问题的解决方案，处理的问题包括分块（chunk）、命名实体识别（NER）、词性标注（POS）、语义角色标注（SRE）等。
 之后Hashimoto\cite{hashimoto2017joint}也提出了可以同时处理依赖解析、语义相关和自然语言推理任务的网络结构。
-使用跨语种的预料进行机器翻译模型训练时发现，采用多任务学习的方法\cite{johnson2017google}甚至可以一定程度解决零样本的问题。
+使用跨语种的语料进行机器翻译模型训练时发现，采用多任务学习的方法\cite{johnson2017google}甚至可以一定程度解决零样本的问题。
 基于序列到序列的模型采用不同数量的编码器和解码器时\cite{luong2015multi}甚至可以同时学习翻译、解析和图像字幕生成的任务。
 甚至学习图像分类和语音识别任务的模型可以被模块化\cite{kaiser2017one}之后拓展到图像到文字的问答任务上\cite{xiong2016dynamic}。
 采用\cite{ruder2017learning}的方法还可以减轻任务之间存在的干扰。
@@ -463,7 +462,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 \begin{table}[!htpb]
   \bicaption[多任务学习网络在不同训练策略下的实验结果]
     {多任务学习网络在不同训练策略下的实验结果}
-    {The Experimental Results of Multitasking Networks With Different Strategies}
+    {The Experimental Results of Multitasking Networks with Different Strategies}
   \label{tab:drwwlzbtxlclxdsyjg}
   \centering
   \begin{threeparttable}[b]
@@ -566,7 +565,7 @@ TCR模板将两个任务的模式进行了统一，使得网络模型的输入�
 
 \section{本章小结}
 
-为了进一步提高NL2SQL生成的准确性以及解决中文自然语言生成SQL查询语句的问题，本章提出了一种基于多任务学习的NL2SQL生成方法。
+为了进一步提高NL2SQL生成的准确率以及解决中文自然语言生成SQL查询语句的问题，本章提出了一种基于多任务学习的NL2SQL生成方法。
 本方法设计了TCR模板，将中文自然语言转换为英文自然语言任务和英文自然语言转换为SQL查询语句任务进行统一。
 接着，提出了由编码器和解码器构成的多任务学习网络模型。
 其中，编码过程包含单独编码、对准、对偶协同注意力、压缩、自注意力和最终编码阶段；

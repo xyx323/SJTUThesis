@@ -8,22 +8,18 @@
 
 \begin{abstract}
 
-随着IT技术地不断发展，医疗、教育、金融等各个行业都在使用数据库进行数据存储。
-软件工程师在软件开发过程中会频繁地使用SQL语句用于数据的增删改查，业务人员也经常使用SQL语句进行报表与在线分析（OLAP）的定制，从数据库中获取所需信息。
+随着IT技术的不断发展，医疗、教育、金融等各个行业都在使用数据库进行数据存储。
+软件工程师在软件开发过程中会频繁地使用SQL语句用于数据的增删改查，业务人员也经常使用SQL语句进行报表与在线分析 (OLAP) 的定制，从数据库中获取所需信息。
 但是，SQL语言本质上是一种编程语言，使用者需要具有一定的数据库和SQL语言相关专业知识，并且需要在熟悉数据库模式的前提下，才能熟练进行SQL语句的编写。
 如何降低SQL语言的学习成本？如何更快更好地生成SQL查询语句？如何使用更自然的方式生成SQL语言？
-针对这些问题，本文研究面向最终用户的SQL查询语句的自动生成技术，提出了从交互式自然语言接口生成SQL查询语句(INL2SQL)和从自然语言生成SQL查询语句(NL2SQL)的技术与方法。
+针对这些问题，本文研究面向最终用户的SQL查询语句的自动生成技术，提出了从交互式自然语言接口生成SQL查询语句 (INL2SQL) 和从自然语言生成SQL查询语句 (NL2SQL) 的技术与方法。
 
 本文主要的贡献和创新点包括：
 
 1)研究提出了一种基于映射的INL2SQL生成方法。
 本方法使用依赖解析树生成、解析树节点映射、解析树优化重构、查询树翻译模块对用户输入的查询进行意图的解析，并将其映射到SQL查询语句上。
 通过交互式对话器和用户接口模块对意图的解析与映射进行补充和重构。
-本文采用Classicmodels和MAS数据集进行了实验，实验表明，模型在有交互的情况下在简单、中等、困难的场景下的表现为100\%、80\%、35\%和100\%、93\%、71\%的准确性，有效解决了意图缺失和歧义等问题。
-
-
-% 减少了自然语言解析中出现的歧义问题和错误情况，提升了准确性。
-
+本文采用Classicmodels和MAS数据集进行了实验，实验表明，模型在有交互的情况下在简单、中等、困难的场景下的表现为100\%、80\%、35\%和100\%、93\%、71\%的准确率，有效解决了意图缺失和歧义等问题。
 
 2)研究提出了一种基于深度强化学习的NL2SQL生成方法。
 本方法采用由编码器和解码器构成，结合自注意力机制的神经网络模型结构，使用强化学习将SQL语句的执行结果用于神经网络模型的强化。
@@ -44,8 +40,8 @@
 % 提出了一种基于深度强化学习的NL2SQL的方法。
 
 3)研究提出了一种基于多任务学习的NL2SQL生成方法。
-为了进一步提高NL2SQL生成的准确性以及解决中文自然语言生成SQL查询语句的问题，本文提出了一种基于多任务学习的NL2SQL生成的模型与方法。
-本方法使用TCR模板把多项学习任务进行统一，再使用由编码器和解码器构成的多任务学习网络模型进行同时学习，采用对偶协同注意力机制实现任务间的迁移学习。
+为了进一步提高NL2SQL生成的准确率以及解决中文自然语言生成SQL查询语句的问题，本文提出了一种基于多任务学习的NL2SQL生成的模型与方法。
+本方法使用TCR (Task-Content-Result) 模板把多项学习任务进行统一，再使用由编码器和解码器构成的多任务学习网络模型进行同时学习，采用对偶协同注意力机制实现任务间的迁移学习。
 在实验过程中，本文采用了完全联合学习、反递进学习等不同的优化策略进行训练。
 本方法在WikiSQL数据集上的逻辑形式准确率和数据库执行准确率达到78.7\%和86.1\%的最高水平，验证了方法的有效性。
 在引入更多的任务进行学习时，对各项任务指标进行加和得到607.7的总分，表明了本方法能够有效解决中文自然语言生成SQL查询语句问题，同时还具有良好的通用性和可拓展性。
@@ -55,40 +51,29 @@
 
 \begin{englishabstract}
 
-% An imperial edict issued in 1896 by Emperor Guangxu, established Nanyang Public School in Shanghai. The normal school, school of foreign studies, middle school and a high school were established. Sheng Xuanhuai, the person responsible for proposing the idea to the emperor, became the first president and is regarded as the founder of the university.
-
-% During the 1930s, the university gained a reputation of nurturing top engineers. After the foundation of People's Republic, some faculties were transferred to other universities. A significant amount of its faculty were sent in 1956, by the national government, to Xi'an to help build up Xi'an Jiao Tong University in western China. Afterwards, the school was officially renamed Shanghai Jiao Tong University.
-
-% Since the reform and opening up policy in China, SJTU has taken the lead in management reform of institutions for higher education, regaining its vigor and vitality with an unprecedented momentum of growth. SJTU includes five beautiful campuses, Xuhui, Minhang, Luwan Qibao, and Fahua, taking up an area of about 3,225,833 m2. A number of disciplines have been advancing towards the top echelon internationally, and a batch of burgeoning branches of learning have taken an important position domestically.
-
-% Today SJTU has 31 schools (departments), 63 undergraduate programs, 250 masters-degree programs, 203 Ph.D. programs, 28 post-doctorate programs, and 11 state key laboratories and national engineering research centers.
-
-% SJTU boasts a large number of famous scientists and professors, including 35 academics of the Academy of Sciences and Academy of Engineering, 95 accredited professors and chair professors of the "Cheung Kong Scholars Program" and more than 2,000 professors and associate professors.
-
-% Its total enrollment of students amounts to 35,929, of which 1,564 are international students. There are 16,802 undergraduates, and 17,563 masters and Ph.D. candidates. After more than a century of operation, Jiao Tong University has inherited the old tradition of "high starting points, solid foundation, strict requirements and extensive practice." Students from SJTU have won top prizes in various competitions, including ACM International Collegiate Programming Contest, International Mathematical Contest in Modeling and Electronics Design Contests. Famous alumni include Jiang Zemin, Lu Dingyi, Ding Guangen, Wang Daohan, Qian Xuesen, Wu Wenjun, Zou Taofen, Mao Yisheng, Cai Er, Huang Yanpei, Shao Lizi, Wang An and many more. More than 200 of the academics of the Chinese Academy of Sciences and Chinese Academy of Engineering are alumni of Jiao Tong University.
 
 With the fast development of IT technology, many mission-critical applications in healthcare, education, finance store their information in relational database.
 Software engineers use SQL statements to insert, delete, update and select data frequently during their software development, and business people often use it to make reports and online analysis(OLAP) in the same way.
 Although expressive and powerful, the SQL language is essentially a programming language, which requires users to be skilled in programming, expertised in SQL language grammar and familiared with the database schema.
-Therefore, how to reduce the learning cost of SQL language, how to generate SQL queries faster and better, and how to generate the SQL query statement by a more natural way become the problems that we attempt to tackle.
-This paper studies the automatic generation of end-user-oriented SQL query statement and puts forward the technologies and methods of generating SQL query statements from interactive natural language interface(INL2SQL) and natural language(NL2SQL).
+How to reduce the learning cost of SQL language? how to generate SQL queries faster and better? And how to generate the SQL query statement by a more natural way? They have become the urgent problems that we attempt to tackle.
+This paper studies the automatic generation of end-user-oriented SQL query statement and puts forward the technologies and methods of generating SQL query statements from interactive natural language interface (INL2SQL) and natural language (NL2SQL).
 
 The main contributions and innovations of this paper include:
 
-1)The paper proposes a INL2SQL(Interactive Nature Language to SQL Query Statement) method based on mapping.
-The method utilizes the modules of dependency parse tree generation, parse tree node mapping, parse tree optimization and reconstruction, query tree translation to analyze the intention of users' queries and map it to SQL query statements.
+1)This paper proposes an INL2SQL(Interactive Nature Language to SQL Query Statement) method through mapping.
+It utilizes the modules of dependency parse tree generation, parse tree node mapping, parse tree optimization and reconstruction, query tree translation to analyze the intention of users' queries and map them to SQL query statements.
 Meanwhile, through interactive dialog and user interface module, the intention can be reconstructed and fulfilled.
-Experiments on Classicmodels and MAS datasets show that the accuracy of the interactive model is 100\%, 80\%, 35\% and 100\%, 93\% and 71\% in simple, medium and hard scenarios, which solves the problems of intent missing and ambiguity effectively.
+Experiments on Classicmodels and MAS datasets show that the accuracy of the interactive model is 100\%, 80\%, 35\% and 100\%, 93\% and 71\% in simple, medium and hard scenarios. It solves the problems of intent missing and ambiguity effectively.
 
-2)The paper proposes a NL2SQL(Nature Language to SQL Query Statement) method based on deep reinforcement learning.
-A new neural network model structure composed of encoder and decoder, combined with self-attention mechanism has been designed and adopted in this method, which also utilizes reinforcement learning to enhance the model by the execution result of SQL statements.
-In addition, the learning objective of the network model is transformed into the optimization problem of strategies, thus this papaer definites the states and actions.
-In order to solve the order problem of filtering conditions and implicit column problem, this method also proposes the solution with non-deterministic oracle prediction and ANYCOL state.
-The experiment results show that the method is first-class on WikiSQL dataset, the accuracy of database execution on ATIS verification dataset is 89.2\%, the logical form and database execution accuracy on verification and test datasets of Spider are 23.2\% and 24.1\% respectively, which outperforms the existing approaches.
+2)This paper proposes an NL2SQL(Nature Language to SQL Query Statement) method using deep reinforcement learning.
+A new neural network model composed of encoder and decoder, combined with self-attention mechanism has been designed and adopted in this method. It also utilizes reinforcement learning to enhance the model by the execution result of SQL statements.
+In addition, the learning problem of the network model is transformed into the optimization problem of strategies, and the states and actions are defined.
+In order to solve the order problem of filtering conditions and implicit column problem, this method also proposes a solution with non-deterministic oracle prediction and ANYCOL state.
+The experiment results show that the proposed method is first-class on WikiSQL dataset. Its accuracy of database execution on ATIS verification dataset is 89.2\%, the logical form and database execution accuracy on verification and test datasets of Spider are 23.2\% and 24.1\% respectively, which outperforms the existing approaches.
 
-3)The paper proposes a NL2SQL method based on multitask learning.
-In order to further improve the accuracy of NL2SQL generation and solve the problem of generating SQL queries with Chinese natural language, 
-the method first unify different tasks by TCR template and use multi-task network model, which composed of encoder and decoder, and dual cooperative attention mechanism to learn simultaneously.
+3)This paper proposes an NL2SQL method through multitask learning.
+In order to further improve the accuracy of NL2SQL generation and solve the problem of generating SQL queries from Chinese natural language, multitask learning technology is adopted.
+The method first unifies different tasks by TCR  (Task-Content-Result) template, and then uses multi-task network model, which composed of encoder and decoder, and dual cooperative attention mechanism to learn simultaneously.
 Moreover, different optimization strategies, such as fully joint and anti-curriculum, are adopted during training.
 Finally, the logical form and database execution accuracy of this method are 78.7\% and 86.1\% on WikiSQL datasets, which reaches the highest levels and verifies the effectiveness.
 The total score is 607.7 by learning more tasks, which shows that the method can solve the problem of generating SQL query statements with Chinese natural language, and meanwhile has good generality and extensibility.
